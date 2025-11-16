@@ -1,0 +1,27 @@
+# Ignore Python caches and common temporary files
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.cache/
+cache/
+*.pyc
+
+# Byte-compiled / optimized / DLL files
+*.pyo
+*.pyd
+
+# virtualenv/
+venv/
+ENV/
+env/
+
+# Distribution / packaging
+build/
+dist/
+eggs/
+*.egg-info/
+.eggs/
+
+# macOS
+.DS_Store
