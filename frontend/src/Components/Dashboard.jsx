@@ -1,49 +1,137 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useMemo, Suspense } from "react";
 import axios from "axios";
-import {
-  LineChart,
-  Line,
-  BarChart,
-  Bar,
-  PieChart,
-  Pie,
-  Cell,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts";
+import { Canvas, useFrame } from "@react-three/fiber";
+import { Stars } from "@react-three/drei";
+import { motion, AnimatePresence } from "framer-motion";
+import * as THREE from "three";
+import "./Dashboard.css";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://127.0.0.1:8000";
 
-const RATING_CATEGORY_COLORS = {
-  high: "#22C55E",
-  medium: "#FACC15",
-  low: "#F87171",
-};
+// String with Sound Waves - Same as RateUs
+function SoundString({ position, segments = 50, waveSpeed = 1, waveAmplitude = 0.5, delay = 0 }) {
+  const lineRef = useRef();
+  const geometryRef = useRef();
 
-const SENTIMENT_PALETTE = [
-  "#3B82F6",
-  "#10B981",
-  "#F97316",
-  "#EF4444",
-  "#8B5CF6",
-  "#14B8A6",
-  "#EC4899",
-  "#6366F1",
-];
+  useEffect(() => {
+    if (geometryRef.current) {
+      const positions = new Float32Array((segments + 1) * 3);
+      for (let i = 0; i <= segments; i++) {
+        positions[i * 3] = (i / segments) * 8 - 4;
+        positions[i * 3 + 1] = 0;
+        positions[i * 3 + 2] = 0;
+      }
+      geometryRef.current.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    }
+  }, [segments]);
+
+  useFrame((state) => {
+    if (lineRef.current && geometryRef.current) {
+      const time = state.clock.elapsedTime + delay;
+      const positions = geometryRef.current.attributes.position;
+      
+      for (let i = 0; i <= segments; i++) {
+        const x = (i / segments) * 12 - 6;
+        const wave1 = Math.sin(x * 2 + time * waveSpeed) * waveAmplitude;
+        const wave2 = Math.sin(x * 3 + time * waveSpeed * 1.5) * (waveAmplitude * 0.6);
+        const wave3 = Math.sin(x * 4 + time * waveSpeed * 0.8) * (waveAmplitude * 0.4);
+        const y = wave1 + wave2 + wave3;
+        
+        positions.setXYZ(i, x, y, 0);
+      }
+      
+      positions.needsUpdate = true;
+      lineRef.current.rotation.z = Math.sin(time * 0.2) * 0.1;
+    }
+  });
+
+  return (
+    <line ref={lineRef}>
+      <bufferGeometry ref={geometryRef} />
+      <lineBasicMaterial
+        color="#4c1d95"
+        transparent
+        opacity={0.5}
+        linewidth={5}
+      />
+    </line>
+  );
+}
+
+// Multiple Strings Group
+function StringCurtain({ position, stringCount = 15 }) {
+  const strings = useMemo(() => {
+    return Array.from({ length: stringCount }).map((_, i) => ({
+      z: (i - stringCount / 2) * 0.4,
+      waveSpeed: 0.5 + (i % 3) * 0.3,
+      waveAmplitude: 0.3 + (i % 2) * 0.2,
+      delay: i * 0.2,
+      color: new THREE.Color().lerpColors(
+        new THREE.Color("#4c1d95"),
+        new THREE.Color("#6d28d9"),
+        i / stringCount
+      ),
+    }));
+  }, [stringCount]);
+
+  return (
+    <group position={position}>
+      {strings.map((str, i) => (
+        <group key={i} position={[0, 0, str.z]}>
+          <SoundString
+            segments={80}
+            waveSpeed={str.waveSpeed}
+            waveAmplitude={str.waveAmplitude * 1.5}
+            delay={str.delay}
+          />
+        </group>
+      ))}
+    </group>
+  );
+}
+
+// Floating Particles
+function FloatingParticles({ count = 100 }) {
+  const particlesRef = useRef();
+  const positions = useMemo(() => {
+    return Array.from({ length: count }).map(() => [
+      (Math.random() - 0.5) * 20,
+      (Math.random() - 0.5) * 20,
+      (Math.random() - 0.5) * 20,
+    ]);
+  }, [count]);
+
+  useFrame((state) => {
+    if (particlesRef.current) {
+      particlesRef.current.rotation.y = state.clock.elapsedTime * 0.1;
+      particlesRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.05) * 0.1;
+    }
+  });
+
+  return (
+    <points ref={particlesRef}>
+      <bufferGeometry>
+        <bufferAttribute
+          attach="attributes-position"
+          count={positions.length}
+          array={new Float32Array(positions.flat())}
+          itemSize={3}
+        />
+      </bufferGeometry>
+      <pointsMaterial color="#6d28d9" size={0.1} transparent opacity={0.6} />
+    </points>
+  );
+}
 
 function Dashboard() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [selectedConversation, setSelectedConversation] = useState(null);
-  const [timeframe, setTimeframe] = useState("30d");
+  const [timeframe, setTimeframe] = useState("all");
   const [customStart, setCustomStart] = useState("");
   const [customEnd, setCustomEnd] = useState("");
-  const [appliedRangeLabel, setAppliedRangeLabel] = useState("Last 30 days");
+  const [appliedRangeLabel, setAppliedRangeLabel] = useState("All time");
 
   useEffect(() => {
     applyPresetRange(timeframe);
@@ -68,7 +156,6 @@ function Dashboard() {
         label = "Last 30 days";
         break;
       case "custom":
-        // For custom we wait for user to click apply
         return;
       default:
         start = null;
@@ -91,7 +178,19 @@ function Dashboard() {
       setAppliedRangeLabel(label);
     } catch (err) {
       console.error("Error fetching analytics:", err);
-      setError(err.response?.data?.detail || "Failed to load analytics");
+      if (err.response?.status === 404) {
+        if (err.response?.data?.detail?.includes("No saved conversations")) {
+          setError("No conversations found yet. Submit some feedback first!");
+        } else if (err.response?.data?.detail?.includes("No conversations found for the selected timeframe")) {
+          setError("No conversations found for the selected date range. Try selecting 'All time'.");
+        } else {
+          setError("No conversations found. Try selecting a different date range.");
+        }
+      } else if (err.code === 'ECONNREFUSED' || err.message?.includes('Network Error')) {
+        setError(`Cannot connect to backend at ${BACKEND_URL}. Make sure the backend server is running.`);
+      } else {
+        setError(err.response?.data?.detail || err.message || "Failed to load analytics");
+      }
     } finally {
       setLoading(false);
     }
@@ -113,18 +212,28 @@ function Dashboard() {
     });
   };
 
-  const getRatingCategory = (score) => {
-    if (score >= 9) return "High";
-    if (score >= 7) return "Medium";
-    return "Low";
+  const calculateNPS = () => {
+    if (!data?.conversations) return 0;
+    let promoters = 0;
+    let detractors = 0;
+    data.conversations.forEach((conv) => {
+      const score = conv.score || 0;
+      if (score >= 9) promoters++;
+      else if (score <= 6) detractors++;
+    });
+    const total = data.conversations.length;
+    if (total === 0) return 0;
+    return Math.round(((promoters / total) - (detractors / total)) * 100);
   };
 
   const prepareRatingData = () => {
     if (!data?.conversations) return [];
     const categories = { High: 0, Medium: 0, Low: 0 };
     data.conversations.forEach((conv) => {
-      const category = getRatingCategory(conv.score || 0);
-      categories[category]++;
+      const score = conv.score || 0;
+      if (score >= 9) categories.High++;
+      else if (score >= 7) categories.Medium++;
+      else categories.Low++;
     });
     return Object.entries(categories).map(([name, value]) => ({ name, value }));
   };
@@ -158,28 +267,37 @@ function Dashboard() {
     }));
   };
 
-  const prepareTurnsDistribution = () => {
-    if (!data?.conversations) return [];
-    const distribution = {};
-    data.conversations.forEach((conv) => {
-      const turns = conv.total_turns || 0;
-      distribution[turns] = (distribution[turns] || 0) + 1;
-    });
-    return Object.entries(distribution)
-      .map(([turns, count]) => ({
-        turns: Number(turns),
-        label: `${turns} turn${turns === "1" ? "" : "s"}`,
-        count,
-      }))
-      .sort((a, b) => a.turns - b.turns);
-  };
-
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 text-lg">Loading analytics...</p>
+      <div className="dashboard-container">
+        <div className="animated-background"></div>
+        <div className="three-d-background">
+          <Canvas camera={{ position: [0, 0, 8], fov: 75 }}>
+            <Suspense fallback={null}>
+              <StringCurtain position={[0, 0, 0]} />
+              <FloatingParticles count={80} />
+              <Stars radius={300} depth={50} count={5000} factor={4} fade speed={1} />
+            </Suspense>
+          </Canvas>
+        </div>
+        <div className="content-wrapper">
+          <div className="content-inner">
+            <div className="loading-screen">
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                className="loading-spinner"
+              ></motion.div>
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2 }}
+                className="loading-text"
+              >
+                Loading analytics...
+              </motion.p>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -187,30 +305,57 @@ function Dashboard() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
-        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md">
-          <div className="text-red-600 text-6xl mb-4 text-center">⚠️</div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">Error Loading Dashboard</h2>
-          <p className="text-gray-600 mb-4 text-center">{error}</p>
-          <button
-            onClick={fetchAnalytics}
-            className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-          >
-            Retry
-          </button>
+      <div className="dashboard-container">
+        <div className="animated-background"></div>
+        <div className="three-d-background">
+          <Canvas camera={{ position: [0, 0, 8], fov: 75 }}>
+            <Suspense fallback={null}>
+              <StringCurtain position={[0, 0, 0]} />
+              <FloatingParticles count={80} />
+              <Stars radius={300} depth={50} count={5000} factor={4} fade speed={1} />
+            </Suspense>
+          </Canvas>
+        </div>
+        <div className="content-wrapper">
+          <div className="content-inner">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="error-card"
+            >
+              <div className="error-icon">⚠️</div>
+              <h2 className="error-title">Error Loading Dashboard</h2>
+              <p className="error-message">{error}</p>
+              <div className="error-actions">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => applyPresetRange(timeframe)}
+                  className="error-btn error-btn-primary"
+                >
+                  Retry
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => {
+                    setTimeframe("all");
+                    applyPresetRange("all");
+                  }}
+                  className="error-btn error-btn-secondary"
+                >
+                  Try All Time
+                </motion.button>
+              </div>
+            </motion.div>
+          </div>
         </div>
       </div>
     );
   }
 
   if (!data) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-gray-600 text-lg">No data available</p>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   const summary = data.summary || {};
@@ -218,427 +363,518 @@ function Dashboard() {
   const sentimentData = prepareSentimentData();
   const scoreTrend = prepareScoreTrend();
   const topFeedback = prepareTopFeedback();
-  const turnsDistribution = prepareTurnsDistribution();
+  const npsScore = calculateNPS();
+
+  const sentimentColors = {
+    Positive: "#22C55E",
+    Negative: "#EF4444",
+    Neutral: "#8B5CF6",
+    Frustrated: "#F97316",
+    Confused: "#FACC15",
+    Unknown: "#94A3B8",
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-8 px-4">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8 animate-fade-in">
-          <div className="flex flex-col gap-4">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div className="dashboard-container">
+      <div className="animated-background"></div>
+      <div className="three-d-background">
+        <Canvas camera={{ position: [0, 0, 8], fov: 75 }}>
+          <Suspense fallback={null}>
+            <StringCurtain position={[0, 0, 0]} />
+            <FloatingParticles count={80} />
+            <Stars radius={300} depth={50} count={5000} factor={4} fade speed={1} />
+          </Suspense>
+        </Canvas>
+      </div>
+
+      <div className="content-wrapper">
+        <div className="content-inner">
+          {/* Header */}
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="dashboard-header"
+          >
+            <div className="header-content">
               <div>
-                <h1 className="text-4xl font-bold text-gray-900 mb-2 animate-slide-in-right">📊 Analytics Dashboard</h1>
-                <p className="text-gray-600 animate-slide-in-right animate-delay-100">
+                <h1 className="dashboard-title">📊 Analytics Dashboard</h1>
+                <p className="dashboard-subtitle">
                   Customer feedback insights and trends
-                  <span className="ml-2 text-sm text-gray-500">({appliedRangeLabel})</span>
+                  <span className="range-label"> ({appliedRangeLabel})</span>
                 </p>
               </div>
-              <div className="flex flex-wrap items-center gap-3">
+              <div className="header-controls">
                 <select
                   value={timeframe}
                   onChange={(e) => setTimeframe(e.target.value)}
-                  className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="timeframe-select"
                 >
+                  <option value="all">All time</option>
                   <option value="30d">Last 30 days</option>
                   <option value="7d">Last 7 days</option>
-                  <option value="all">All time</option>
                   <option value="custom">Custom range</option>
                 </select>
-
                 {timeframe !== "custom" && (
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={() => applyPresetRange(timeframe)}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm flex items-center gap-2"
+                    className="refresh-btn"
                   >
-                    <span>🔄</span>
-                    Refresh
-                  </button>
+                    🔄 Refresh
+                  </motion.button>
                 )}
               </div>
             </div>
 
             {timeframe === "custom" && (
-              <div className="bg-white rounded-xl shadow p-4 flex flex-col md:flex-row md:items-end gap-4">
-                <div className="flex-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Start date</label>
-                  <input
-                    type="date"
-                    value={customStart}
-                    onChange={(e) => setCustomStart(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="custom-range-card"
+              >
+                <div className="custom-range-inputs">
+                  <div className="date-input-group">
+                    <label>Start date</label>
+                    <input
+                      type="date"
+                      value={customStart}
+                      onChange={(e) => setCustomStart(e.target.value)}
+                      className="date-input"
+                    />
+                  </div>
+                  <div className="date-input-group">
+                    <label>End date</label>
+                    <input
+                      type="date"
+                      value={customEnd}
+                      max={new Date().toISOString().split("T")[0]}
+                      onChange={(e) => setCustomEnd(e.target.value)}
+                      className="date-input"
+                    />
+                  </div>
+                  <div className="date-input-actions">
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={handleApplyCustomRange}
+                      className="apply-btn"
+                    >
+                      Apply
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => {
+                        setCustomStart("");
+                        setCustomEnd("");
+                        setTimeframe("all");
+                      }}
+                      className="reset-btn"
+                    >
+                      Reset
+                    </motion.button>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">End date</label>
-                  <input
-                    type="date"
-                    value={customEnd}
-                    max={new Date().toISOString().split("T")[0]}
-                    onChange={(e) => setCustomEnd(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-                <div className="flex gap-3">
-                  <button
-                    onClick={handleApplyCustomRange}
-                    className="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm"
-                  >
-                    Apply
-                  </button>
-                  <button
-                    onClick={() => {
-                      setCustomStart("");
-                      setCustomEnd("");
-                      setTimeframe("30d");
-                    }}
-                    className="px-5 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition text-sm"
-                  >
-                    Reset
-                  </button>
-                </div>
-              </div>
+              </motion.div>
             )}
-          </div>
-        </div>
+          </motion.div>
 
-        {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-blue-500 hover-lift animate-fade-in animate-delay-100">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-600 text-sm font-medium">Total Conversations</p>
-                <p className="text-3xl font-bold text-gray-900 mt-2 transition-smooth">
-                  {summary.total_conversations ??
-                    summary.conversations ??
-                    0}
-                </p>
+          {/* Summary Cards */}
+          <div className="summary-grid">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="summary-card summary-card-blue"
+            >
+              <div className="summary-card-content">
+                <div>
+                  <p className="summary-label">Total Conversations</p>
+                  <p className="summary-value">
+                    {summary.total_conversations || 0}
+                  </p>
+                </div>
+                <div className="summary-icon">💬</div>
               </div>
-              <div className="text-4xl animate-pulse-slow">💬</div>
-            </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="summary-card summary-card-green"
+            >
+              <div className="summary-card-content">
+                <div>
+                  <p className="summary-label">Average Rating</p>
+                  <p className="summary-value">{summary.avg_score || "N/A"}</p>
+                  {summary.median_score && (
+                    <p className="summary-sublabel">Median: {summary.median_score}</p>
+                  )}
+                </div>
+                <div className="summary-icon">⭐</div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="summary-card summary-card-purple"
+            >
+              <div className="summary-card-content">
+                <div>
+                  <p className="summary-label">NPS Score</p>
+                  <p className={`summary-value ${npsScore >= 50 ? 'nps-high' : npsScore >= 0 ? 'nps-medium' : 'nps-low'}`}>
+                    {npsScore}
+                  </p>
+                </div>
+                <div className="summary-icon">📈</div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="summary-card summary-card-orange"
+            >
+              <div className="summary-card-content">
+                <div>
+                  <p className="summary-label">Avg Conversation Turns</p>
+                  <p className="summary-value">{summary.avg_turns || 0}</p>
+                  {summary.max_turns && (
+                    <p className="summary-sublabel">Max: {summary.max_turns}</p>
+                  )}
+                </div>
+                <div className="summary-icon">🔄</div>
+              </div>
+            </motion.div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-green-500 hover-lift animate-fade-in animate-delay-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-600 text-sm font-medium">Average Rating</p>
-                <p className="text-3xl font-bold text-gray-900 mt-2 transition-smooth">{summary.avg_score || "N/A"}</p>
-                {summary.median_score && (
-                  <p className="text-xs text-gray-500 mt-1">Median: {summary.median_score}</p>
+          {/* Charts Grid */}
+          <div className="charts-grid">
+            {/* Rating Distribution */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.3 }}
+              className="chart-card"
+            >
+              <h2 className="chart-title">Rating Distribution</h2>
+              <div className="chart-content">
+                <div className="pie-chart-container">
+                  <svg viewBox="0 0 200 200" className="pie-chart-svg">
+                    {ratingData.reduce((acc, item, index) => {
+                      const total = ratingData.reduce((sum, d) => sum + d.value, 0);
+                      if (total === 0) return acc;
+                      const percent = (item.value / total) * 100;
+                      const startAngle = acc.currentAngle;
+                      const endAngle = startAngle + (percent / 100) * 360;
+                      const largeArc = percent > 50 ? 1 : 0;
+                      
+                      const x1 = 100 + 80 * Math.cos((startAngle * Math.PI) / 180);
+                      const y1 = 100 + 80 * Math.sin((startAngle * Math.PI) / 180);
+                      const x2 = 100 + 80 * Math.cos((endAngle * Math.PI) / 180);
+                      const y2 = 100 + 80 * Math.sin((endAngle * Math.PI) / 180);
+                      
+                      const pathData = [
+                        `M 100 100`,
+                        `L ${x1} ${y1}`,
+                        `A 80 80 0 ${largeArc} 1 ${x2} ${y2}`,
+                        `Z`,
+                      ].join(' ');
+                      
+                      const colors = { High: "#22C55E", Medium: "#FACC15", Low: "#F87171" };
+                      
+                      acc.elements.push(
+                        <path
+                          key={index}
+                          d={pathData}
+                          fill={colors[item.name] || "#94A3B8"}
+                          className="pie-segment"
+                        />
+                      );
+                      
+                      acc.currentAngle = endAngle;
+                      return acc;
+                    }, { currentAngle: 0, elements: [] }).elements}
+                  </svg>
+                </div>
+                <div className="chart-legend">
+                  {ratingData.map((item) => {
+                    const total = ratingData.reduce((sum, d) => sum + d.value, 0);
+                    const percent = total > 0 ? ((item.value / total) * 100).toFixed(0) : 0;
+                    const colors = { High: "#22C55E", Medium: "#FACC15", Low: "#F87171" };
+                    return (
+                      <div key={item.name} className="legend-item">
+                        <span
+                          className="legend-color"
+                          style={{ backgroundColor: colors[item.name] || "#94A3B8" }}
+                        ></span>
+                        <span className="legend-label">{item.name}: {percent}%</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Sentiment Breakdown */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.4 }}
+              className="chart-card"
+            >
+              <h2 className="chart-title">Sentiment Analysis</h2>
+              <div className="sentiment-cloud">
+                {sentimentData.length === 0 ? (
+                  <p className="no-data">No sentiment data available</p>
+                ) : (
+                  sentimentData.map((item, index) => {
+                    const total = sentimentData.reduce((sum, d) => sum + d.value, 0);
+                    const percent = total > 0 ? ((item.value / total) * 100).toFixed(0) : 0;
+                    const size = Math.max(14, 20 + (item.value / total) * 30);
+                    return (
+                      <motion.div
+                        key={item.name}
+                        initial={{ opacity: 0, scale: 0 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.5 + index * 0.1 }}
+                        className="sentiment-tag"
+                        style={{
+                          fontSize: `${size}px`,
+                          backgroundColor: sentimentColors[item.name] || "#94A3B8",
+                          color: "white",
+                        }}
+                      >
+                        {item.name} ({percent}%)
+                      </motion.div>
+                    );
+                  })
                 )}
               </div>
-              <div className="text-4xl animate-pulse-slow">⭐</div>
-            </div>
+            </motion.div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-yellow-500 hover-lift animate-fade-in animate-delay-300">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-600 text-sm font-medium">Follow-up Required</p>
-                <p className="text-3xl font-bold text-gray-900 mt-2 transition-smooth">{summary.followup_required_pct || 0}%</p>
-              </div>
-              <div className="text-4xl animate-pulse-slow">🔄</div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-purple-500 hover-lift animate-fade-in animate-delay-400">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-600 text-sm font-medium">Avg Conversation Turns</p>
-                <p className="text-3xl font-bold text-gray-900 mt-2 transition-smooth">{summary.avg_turns || 0}</p>
-                {summary.max_turns && (
-                  <p className="text-xs text-gray-500 mt-1">Max: {summary.max_turns}</p>
-                )}
-              </div>
-              <div className="text-4xl animate-pulse-slow">📈</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Charts Row 1 */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          {/* Rating Distribution */}
-          <div className="bg-white rounded-xl shadow-lg p-6 hover-lift animate-scale-in animate-delay-200">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Rating Distribution</h2>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={ratingData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                  outerRadius={100}
-                  fill="#8884d8"
-                  dataKey="value"
-                  animationBegin={0}
-                  animationDuration={800}
-                  animationEasing="ease-out"
-                >
-                  {ratingData.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={RATING_CATEGORY_COLORS[entry.name.toLowerCase()] || "#94A3B8"}
-                    />
-                  ))}
-                </Pie>
-                <Tooltip animationDuration={200} />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-
-          {/* Sentiment Breakdown */}
-          <div className="bg-white rounded-xl shadow-lg p-6 hover-lift animate-scale-in animate-delay-300">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Sentiment Analysis</h2>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={sentimentData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                  outerRadius={100}
-                  fill="#8884d8"
-                  dataKey="value"
-                  animationBegin={100}
-                  animationDuration={800}
-                  animationEasing="ease-out"
-                >
-                  {sentimentData.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={SENTIMENT_PALETTE[index % SENTIMENT_PALETTE.length]}
-                    />
-                  ))}
-                </Pie>
-                <Tooltip animationDuration={200} />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Charts Row 2 */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           {/* Score Trend */}
-          <div className="bg-white rounded-xl shadow-lg p-6 hover-lift animate-scale-in animate-delay-400">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Rating Trend</h2>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={scoreTrend}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis domain={[0, 10]} />
-                <Tooltip animationDuration={200} />
-                <Legend />
-                <Line
-                  type="monotone"
-                  dataKey="score"
-                  stroke="#3B82F6"
-                  strokeWidth={2}
-                  name="Rating"
-                  animationBegin={0}
-                  animationDuration={1000}
-                  animationEasing="ease-out"
-                  dot={{ fill: "#3B82F6", r: 4 }}
-                  activeDot={{ r: 6 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="chart-card chart-card-full"
+          >
+            <h2 className="chart-title">Rating Trend Over Time</h2>
+            <div className="trend-container">
+              {scoreTrend.length === 0 ? (
+                <p className="no-data">No trend data available</p>
+              ) : (
+                <div className="trend-line">
+                  {scoreTrend.map((point, index) => (
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0, scale: 0 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.6 + index * 0.05 }}
+                      className="trend-point"
+                      style={{
+                        left: `${(index / (scoreTrend.length - 1 || 1)) * 100}%`,
+                        bottom: `${(point.score / 10) * 100}%`,
+                      }}
+                      title={`${point.date}: ${point.score}/10`}
+                    >
+                      <div className="trend-dot"></div>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </motion.div>
 
           {/* Top Feedback Themes */}
-          <div className="bg-white rounded-xl shadow-lg p-6 hover-lift animate-scale-in animate-delay-500">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Top Feedback Themes</h2>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={topFeedback} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis type="number" />
-                <YAxis dataKey="name" type="category" width={150} />
-                <Tooltip animationDuration={200} />
-                <Bar 
-                  dataKey="count" 
-                  fill="#8B5CF6"
-                  animationBegin={200}
-                  animationDuration={1000}
-                  animationEasing="ease-out"
-                  radius={[0, 8, 8, 0]}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Conversation Turns Distribution */}
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-6 hover-lift animate-scale-in animate-delay-600">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Conversation Depth Distribution</h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={turnsDistribution}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="label" />
-              <YAxis />
-              <Tooltip animationDuration={200} />
-              <Bar 
-                dataKey="count" 
-                fill="#10B981"
-                animationBegin={300}
-                animationDuration={1000}
-                animationEasing="ease-out"
-                radius={[8, 8, 0, 0]}
-              />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* Conversations Table */}
-        <div className="bg-white rounded-xl shadow-lg p-6 animate-fade-in-up animate-delay-500">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Recent Conversations</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Date</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Score</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Sentiment</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Turns</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Initial Feedback</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.conversations?.slice(0, 20).map((conv, idx) => (
-                  <tr
-                    key={idx}
-                    className="border-b border-gray-100 hover:bg-gray-50 transition-smooth animate-slide-in-right"
-                    style={{ animationDelay: `${idx * 0.05}s` }}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+            className="chart-card"
+          >
+            <h2 className="chart-title">Top Feedback Themes</h2>
+            <div className="feedback-list">
+              {topFeedback.length === 0 ? (
+                <p className="no-data">No feedback themes available</p>
+              ) : (
+                topFeedback.map((item, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.7 + index * 0.1 }}
+                    className="feedback-item"
                   >
-                    <td className="py-3 px-4 text-sm text-gray-600">
-                      {conv.saved_at
-                        ? new Date(conv.saved_at).toLocaleDateString()
-                        : "N/A"}
-                    </td>
-                    <td className="py-3 px-4">
-                      <span
-                        className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                          conv.score >= 9
-                            ? "bg-green-100 text-green-800"
-                            : conv.score >= 7
-                            ? "bg-yellow-100 text-yellow-800"
-                            : "bg-red-100 text-red-800"
-                        }`}
-                      >
-                        {conv.score || "N/A"}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4">
-                      <span
-                        className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                          conv.sentiment?.toLowerCase().includes("positive")
-                            ? "bg-green-100 text-green-800"
-                            : conv.sentiment?.toLowerCase().includes("negative")
-                            ? "bg-red-100 text-red-800"
-                            : "bg-gray-100 text-gray-800"
-                        }`}
-                      >
-                        {conv.sentiment || "Unknown"}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 text-sm text-gray-600">{conv.total_turns || 0}</td>
-                    <td className="py-3 px-4 text-sm text-gray-600 max-w-xs truncate">
-                      {conv.initial_transcription || "N/A"}
-                    </td>
-                    <td className="py-3 px-4">
-                      <button
-                        onClick={() => setSelectedConversation(conv)}
-                        className="px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition text-sm"
-                      >
-                        View
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+                    <div className="feedback-text">{item.fullText}</div>
+                    <div className="feedback-count">{item.count}</div>
+                  </motion.div>
+                ))
+              )}
+            </div>
+          </motion.div>
 
-        {/* Conversation Detail Modal */}
+          {/* Conversations Table */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7 }}
+            className="table-card"
+          >
+            <h2 className="chart-title">Recent Conversations</h2>
+            <div className="table-container">
+              <table className="conversations-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Score</th>
+                    <th>Sentiment</th>
+                    <th>Turns</th>
+                    <th>Initial Feedback</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.conversations?.slice(0, 20).map((conv, idx) => (
+                    <motion.tr
+                      key={idx}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.8 + idx * 0.05 }}
+                      className="table-row"
+                    >
+                      <td>
+                        {conv.saved_at
+                          ? new Date(conv.saved_at).toLocaleDateString()
+                          : "N/A"}
+                      </td>
+                      <td>
+                        <span
+                          className={`score-badge ${
+                            conv.score >= 9
+                              ? "score-high"
+                              : conv.score >= 7
+                              ? "score-medium"
+                              : "score-low"
+                          }`}
+                        >
+                          {conv.score || "N/A"}
+                        </span>
+                      </td>
+                      <td>
+                        <span
+                          className={`sentiment-badge sentiment-${conv.sentiment || "Unknown"}`}
+                          style={{
+                            backgroundColor:
+                              sentimentColors[conv.sentiment || "Unknown"] || "#94A3B8",
+                          }}
+                        >
+                          {conv.sentiment || "Unknown"}
+                        </span>
+                      </td>
+                      <td>{conv.total_turns || 0}</td>
+                      <td className="table-feedback">
+                        {conv.initial_transcription || "N/A"}
+                      </td>
+                      <td>
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => setSelectedConversation(conv)}
+                          className="view-btn"
+                        >
+                          View
+                        </motion.button>
+                      </td>
+                    </motion.tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+
+      {/* Conversation Detail Modal */}
+      <AnimatePresence>
         {selectedConversation && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fade-in">
-            <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto animate-scale-in">
-              <div className="sticky top-0 bg-white border-b border-gray-200 p-6 flex items-center justify-between">
-                <h3 className="text-2xl font-bold text-gray-900">Conversation Details</h3>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="modal-overlay"
+            onClick={() => setSelectedConversation(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="modal-content"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="modal-header">
+                <h3>Conversation Details</h3>
                 <button
                   onClick={() => setSelectedConversation(null)}
-                  className="text-gray-500 hover:text-gray-700 text-2xl"
+                  className="modal-close"
                 >
                   ×
                 </button>
               </div>
-              <div className="p-6 space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-gray-600">Score</p>
-                    <p className="text-lg font-semibold">{selectedConversation.score || "N/A"}</p>
+              <div className="modal-body">
+                <div className="modal-grid">
+                  <div className="modal-item">
+                    <label>Score</label>
+                    <p>{selectedConversation.score || "N/A"}</p>
                   </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Sentiment</p>
-                    <p className="text-lg font-semibold">{selectedConversation.sentiment || "Unknown"}</p>
+                  <div className="modal-item">
+                    <label>Sentiment</label>
+                    <p>{selectedConversation.sentiment || "Unknown"}</p>
                   </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Total Turns</p>
-                    <p className="text-lg font-semibold">{selectedConversation.total_turns || 0}</p>
+                  <div className="modal-item">
+                    <label>Total Turns</label>
+                    <p>{selectedConversation.total_turns || 0}</p>
                   </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Date</p>
-                    <p className="text-lg font-semibold">
+                  <div className="modal-item">
+                    <label>Date</label>
+                    <p>
                       {selectedConversation.saved_at
                         ? new Date(selectedConversation.saved_at).toLocaleString()
                         : "N/A"}
                     </p>
                   </div>
                 </div>
-                <div>
-                  <p className="text-sm text-gray-600 mb-2">Initial Transcription</p>
-                  <p className="text-gray-800 bg-gray-50 p-3 rounded">
+                <div className="modal-section">
+                  <label>Initial Transcription</label>
+                  <p className="modal-text">
                     {selectedConversation.initial_transcription || "N/A"}
                   </p>
                 </div>
                 {selectedConversation.initial_feedback_points?.length > 0 && (
-                  <div>
-                    <p className="text-sm text-gray-600 mb-2">Key Feedback Points</p>
-                    <ul className="list-disc list-inside space-y-1">
+                  <div className="modal-section">
+                    <label>Key Feedback Points</label>
+                    <ul className="modal-list">
                       {selectedConversation.initial_feedback_points.map((point, i) => (
-                        <li key={i} className="text-gray-800">
-                          {point}
-                        </li>
+                        <li key={i}>{point}</li>
                       ))}
                     </ul>
                   </div>
                 )}
-                {selectedConversation.final_transcription && (
-                  <div>
-                    <p className="text-sm text-gray-600 mb-2">Final Transcription</p>
-                    <p className="text-gray-800 bg-gray-50 p-3 rounded">
-                      {selectedConversation.final_transcription}
-                    </p>
-                  </div>
-                )}
-                {selectedConversation.final_response && (
-                  <div>
-                    <p className="text-sm text-gray-600 mb-2">AI Final Response</p>
-                    <p className="text-gray-800 bg-blue-50 p-3 rounded">
-                      {selectedConversation.final_response}
-                    </p>
-                  </div>
-                )}
               </div>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         )}
-      </div>
+      </AnimatePresence>
     </div>
   );
 }
 
 export default Dashboard;
-
