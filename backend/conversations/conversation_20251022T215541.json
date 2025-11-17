@@ -1,0 +1,22 @@
+{
+  "score": 9,
+  "sentiment": "Satisfied",
+  "initial_transcription": "Confusing return policy",
+  "initial_feedback_points": [
+    "Helpful support",
+    "Quick response"
+  ],
+  "turns": [],
+  "final_analysis": {
+    "transcription": "Confusing return policy",
+    "conversationalResponse": "That's helpful context. Could you tell me which specific part was the most frustrating?",
+    "requiresFollowUp": false,
+    "conversationComplete": true,
+    "score": 9
+  },
+  "metadata": {
+    "total_turns": 0,
+    "completed_at": "2025-10-22T21:55:41.216214Z"
+  },
+  "saved_at": "2025-10-22T21:55:41.216214Z"
+}

@@ -1,0 +1,31 @@
+{
+  "score": 5,
+  "sentiment": "Disappointed",
+  "initial_transcription": "Had issues with payment processing",
+  "initial_feedback_points": [
+    "Poor customer service",
+    "Long wait times"
+  ],
+  "turns": [
+    {
+      "user": "The verification process was confusing",
+      "ai": "That's wonderful to hear! We're so glad you had a positive experience."
+    },
+    {
+      "user": "The mobile app crashes every time I try to checkout",
+      "ai": "That's great to hear! We're thrilled that you're satisfied with our service."
+    }
+  ],
+  "final_analysis": {
+    "transcription": "The mobile app crashes every time I try to checkout",
+    "conversationalResponse": "That's great to hear! We're thrilled that you're satisfied with our service.",
+    "requiresFollowUp": false,
+    "conversationComplete": true,
+    "score": 5
+  },
+  "metadata": {
+    "total_turns": 2,
+    "completed_at": "2025-10-21T11:42:41.219047Z"
+  },
+  "saved_at": "2025-10-21T11:42:41.219047Z"
+}

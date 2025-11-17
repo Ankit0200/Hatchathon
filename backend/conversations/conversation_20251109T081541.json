@@ -1,0 +1,22 @@
+{
+  "score": 9,
+  "sentiment": "Happy",
+  "initial_transcription": "Product quality is poor",
+  "initial_feedback_points": [
+    "Excellent quality",
+    "Great value"
+  ],
+  "turns": [],
+  "final_analysis": {
+    "transcription": "Product quality is poor",
+    "conversationalResponse": "Thank you for sharing that. Could you provide a bit more detail about what went wrong?",
+    "requiresFollowUp": false,
+    "conversationComplete": true,
+    "score": 9
+  },
+  "metadata": {
+    "total_turns": 0,
+    "completed_at": "2025-11-09T08:15:41.218356Z"
+  },
+  "saved_at": "2025-11-09T08:15:41.218356Z"
+}

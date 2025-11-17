@@ -1,0 +1,31 @@
+{
+  "score": 6,
+  "sentiment": "Frustrated",
+  "initial_transcription": "Had issues with payment processing",
+  "initial_feedback_points": [
+    "Easy to use",
+    "Intuitive design"
+  ],
+  "turns": [
+    {
+      "user": "Packaging was secure and well done",
+      "ai": "That's wonderful to hear! We're so glad you had a positive experience."
+    },
+    {
+      "user": "They responded within minutes and solved my issue",
+      "ai": "We really value your input. Thank you for helping us improve our service."
+    }
+  ],
+  "final_analysis": {
+    "transcription": "They responded within minutes and solved my issue",
+    "conversationalResponse": "We really value your input. Thank you for helping us improve our service.",
+    "requiresFollowUp": false,
+    "conversationComplete": true,
+    "score": 6
+  },
+  "metadata": {
+    "total_turns": 2,
+    "completed_at": "2025-10-18T16:03:41.222290Z"
+  },
+  "saved_at": "2025-10-18T16:03:41.222290Z"
+}

@@ -1,0 +1,22 @@
+{
+  "score": 7,
+  "sentiment": "Neutral",
+  "initial_transcription": "Customer service was unhelpful",
+  "initial_feedback_points": [
+    "High quality",
+    "Durable product"
+  ],
+  "turns": [],
+  "final_analysis": {
+    "transcription": "Customer service was unhelpful",
+    "conversationalResponse": "I'm sorry to hear about that issue. Could you tell me more about what specifically was confusing?",
+    "requiresFollowUp": false,
+    "conversationComplete": true,
+    "score": 7
+  },
+  "metadata": {
+    "total_turns": 0,
+    "completed_at": "2025-11-02T05:15:41.221997Z"
+  },
+  "saved_at": "2025-11-02T05:15:41.221997Z"
+}

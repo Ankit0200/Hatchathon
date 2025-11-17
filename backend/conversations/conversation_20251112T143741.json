@@ -1,0 +1,22 @@
+{
+  "score": 10,
+  "sentiment": "Happy",
+  "initial_transcription": "Packaging was poor quality",
+  "initial_feedback_points": [
+    "Website bugs",
+    "Technical issues"
+  ],
+  "turns": [],
+  "final_analysis": {
+    "transcription": "Packaging was poor quality",
+    "conversationalResponse": "We're sorry for the inconvenience. Could you share more details about what happened?",
+    "requiresFollowUp": false,
+    "conversationComplete": true,
+    "score": 10
+  },
+  "metadata": {
+    "total_turns": 0,
+    "completed_at": "2025-11-12T14:37:41.221377Z"
+  },
+  "saved_at": "2025-11-12T14:37:41.221377Z"
+}

@@ -1,0 +1,39 @@
+{
+  "score": 2,
+  "sentiment": "Disappointed",
+  "initial_transcription": "Had issues with payment processing",
+  "initial_feedback_points": [
+    "Helpful support",
+    "Quick response"
+  ],
+  "turns": [
+    {
+      "user": "The product features are limited",
+      "ai": "Thank you for the positive feedback! We're glad we could meet your expectations."
+    },
+    {
+      "user": "It took about 5 minutes just to complete one purchase",
+      "ai": "That's wonderful to hear! We're so glad you had a positive experience."
+    },
+    {
+      "user": "The return process required too many steps",
+      "ai": "Thank you for your detailed feedback. This is exactly the kind of information we need."
+    },
+    {
+      "user": "I found everything I needed quickly",
+      "ai": "I understand your frustration. Let me see if I can help clarify that for you."
+    }
+  ],
+  "final_analysis": {
+    "transcription": "I found everything I needed quickly",
+    "conversationalResponse": "I understand your frustration. Let me see if I can help clarify that for you.",
+    "requiresFollowUp": false,
+    "conversationComplete": true,
+    "score": 2
+  },
+  "metadata": {
+    "total_turns": 4,
+    "completed_at": "2025-10-19T20:09:41.218681Z"
+  },
+  "saved_at": "2025-10-19T20:09:41.218681Z"
+}

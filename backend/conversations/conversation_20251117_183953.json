@@ -1,0 +1,26 @@
+{
+  "score": 5,
+  "sentiment": "Negative",
+  "initial_transcription": "Overall it, the packaging could have been better.",
+  "initial_feedback_points": [
+    "Packaging needs improvement"
+  ],
+  "turns": [
+    {
+      "ai": "I understand. It sounds like the issue might have been related to handling during transit, but I'm glad to hear the product itself was okay. We appreciate you providing that context so we can monitor shipping practices. Thank you for your valuable feedback!",
+      "user": "I mean the pack... I mean, I don't know if it got damaged due to harsh... That's all. Otherwise, it was okay."
+    }
+  ],
+  "final_analysis": {
+    "transcription": "I mean the pack... I mean, I don't know if it got damaged due to harsh... That's all. Otherwise, it was okay.",
+    "conversationalResponse": "I understand. It sounds like the issue might have been related to handling during transit, but I'm glad to hear the product itself was okay. We appreciate you providing that context so we can monitor shipping practices. Thank you for your valuable feedback!",
+    "requiresFollowUp": false,
+    "conversationComplete": true,
+    "score": 5
+  },
+  "metadata": {
+    "total_turns": 1,
+    "completed_at": "2025-11-17T18:39:53.951273Z"
+  },
+  "saved_at": "2025-11-17T18:39:53.951285Z"
+}

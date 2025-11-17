@@ -1,0 +1,22 @@
+{
+  "score": 9,
+  "sentiment": "Positive",
+  "initial_transcription": "Very happy with my purchase",
+  "initial_feedback_points": [
+    "Poor customer service",
+    "Long wait times"
+  ],
+  "turns": [],
+  "final_analysis": {
+    "transcription": "Very happy with my purchase",
+    "conversationalResponse": "Thank you for sharing that. Could you provide a bit more detail about what went wrong?",
+    "requiresFollowUp": false,
+    "conversationComplete": true,
+    "score": 9
+  },
+  "metadata": {
+    "total_turns": 0,
+    "completed_at": "2025-10-30T11:51:41.215828Z"
+  },
+  "saved_at": "2025-10-30T11:51:41.215828Z"
+}

@@ -1,0 +1,31 @@
+{
+  "score": 6,
+  "sentiment": "Disappointed",
+  "initial_transcription": "Very happy with my purchase",
+  "initial_feedback_points": [
+    "User-friendly",
+    "Easy navigation"
+  ],
+  "turns": [
+    {
+      "user": "No issues at all, very easy",
+      "ai": "That's wonderful feedback! We're so happy you're enjoying the product."
+    },
+    {
+      "user": "I've been using it for months and it still works great",
+      "ai": "We're sorry for the inconvenience. Could you share more details about what happened?"
+    }
+  ],
+  "final_analysis": {
+    "transcription": "I've been using it for months and it still works great",
+    "conversationalResponse": "We're sorry for the inconvenience. Could you share more details about what happened?",
+    "requiresFollowUp": false,
+    "conversationComplete": true,
+    "score": 6
+  },
+  "metadata": {
+    "total_turns": 2,
+    "completed_at": "2025-11-07T01:49:41.216898Z"
+  },
+  "saved_at": "2025-11-07T01:49:41.216898Z"
+}
