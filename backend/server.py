@@ -52,10 +52,10 @@ AI_PROMPT = """You are a conversational customer feedback analyst. Your job is t
 NPS (Net Promoter Score) feedback and decide the correct response.
 
 The user gave a score of: {NPS_SCORE}/10
-Here is their audio feedback:
+Here is their feedback (either audio or text):
 
 Instructions:
-1.  Transcribe the user's audio feedback exactly.
+1.  Transcribe the user's feedback exactly (if audio) or use the text as-is (if text).
 2.  Provide a single-word sentiment (e.g., "Positive", "Negative", "Frustrated", "Confused").
 3.  Extract the key feedback points or action items as a list of strings.
 
@@ -87,10 +87,10 @@ FOLLOWUP_PROMPT = """You are continuing a customer feedback conversation. Here i
 **Conversation History:**
 {CONVERSATION_HISTORY}
 
-Now the user is responding with this new audio feedback:
+Now the user is responding with new feedback (either audio or text):
 
 Instructions:
-1. Transcribe their audio response exactly.
+1. Transcribe their response exactly (if audio) or use the text as-is (if text).
 2. Understand the context of their response in relation to the ENTIRE conversation history above.
 3. Generate an appropriate conversational response:
    - If they provided helpful details and you have enough information: Acknowledge their response and thank them. Set `conversationComplete` to `true` and `requiresFollowUp` to `false`.
@@ -187,35 +187,50 @@ async def health():
 @app.post("/submit_feedback")
 async def submit_feedback(
     score: int = Form(..., description="NPS score from 0-10"),
-    audio_data: UploadFile = File(..., description="Audio file (mp3, wav, webm, etc.)")
+    transcription: str = Form(None, description="Pre-transcribed text (faster, optional)"),
+    audio_data: UploadFile = File(None, description="Audio file (fallback if no transcription)")
 ):
     audio_file_handle = None
     temp_path = None
+    user_transcription = None
     try:
         if score < 0 or score > 10:
             raise HTTPException(status_code=400, detail="Score must be 0-10")
 
-        audio_bytes = await audio_data.read()
-        if not audio_bytes:
-            raise HTTPException(status_code=400, detail="Audio file is empty")
+        # Check if transcription or audio provided
+        if transcription:
+            user_transcription = transcription.strip()
+            print("Using frontend transcription for initial feedback")
+        elif audio_data:
+            audio_bytes = await audio_data.read()
+            if not audio_bytes:
+                raise HTTPException(status_code=400, detail="Audio file is empty")
 
-        # write temp audio file
-        ext = os.path.splitext(audio_data.filename)[1] or ".webm"
-        with tempfile.NamedTemporaryFile(delete=False, suffix=ext) as tf:
-            tf.write(audio_bytes)
-            temp_path = tf.name
+            # write temp audio file
+            ext = os.path.splitext(audio_data.filename)[1] or ".webm"
+            with tempfile.NamedTemporaryFile(delete=False, suffix=ext) as tf:
+                tf.write(audio_bytes)
+                temp_path = tf.name
 
-        try:
-            audio_file_handle = genai.upload_file(path=temp_path, mime_type=audio_data.content_type or "audio/webm")
-        except Exception as e:
-            print("Upload error:", e)
-            raise HTTPException(status_code=500, detail=f"Failed to upload audio to Gemini: {e}")
+            try:
+                audio_file_handle = genai.upload_file(path=temp_path, mime_type=audio_data.content_type or "audio/webm")
+            except Exception as e:
+                print("Upload error:", e)
+                raise HTTPException(status_code=500, detail=f"Failed to upload audio to Gemini: {e}")
+        else:
+            raise HTTPException(status_code=400, detail="Either transcription or audio_data must be provided")
 
         model = genai.GenerativeModel(model_name="gemini-2.5-flash-preview-09-2025", generation_config=generation_config)
         prompt = AI_PROMPT.format(NPS_SCORE=score)
 
         try:
-            response = await model.generate_content_async([prompt, audio_file_handle])
+            if user_transcription:
+                # Use text transcription
+                prompt_with = f"{prompt}\n\nUser's feedback: \"{user_transcription}\""
+                response = await model.generate_content_async(prompt_with)
+            else:
+                # Use audio file
+                response = await model.generate_content_async([prompt, audio_file_handle])
         except Exception as e:
             print("Model error:", e)
             raise HTTPException(status_code=500, detail=f"Error calling model: {e}")
@@ -243,7 +258,11 @@ async def submit_feedback(
             raise HTTPException(status_code=500, detail="Model returned invalid conversationComplete type")
 
         # fill missing supportive fields
-        parsed.setdefault("transcription", "")
+        # Use transcription from frontend if provided, otherwise use parsed transcription
+        parsed.setdefault("transcription", user_transcription or parsed.get("transcription", ""))
+        if user_transcription and not parsed.get("transcription"):
+            parsed["transcription"] = user_transcription
+        
         parsed.setdefault("sentiment", "")
         parsed.setdefault("feedback", [])
         parsed.setdefault("conversationalResponse", "")
