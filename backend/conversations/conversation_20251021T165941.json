@@ -1,0 +1,22 @@
+{
+  "score": 10,
+  "sentiment": "Positive",
+  "initial_transcription": "Price is reasonable for the value",
+  "initial_feedback_points": [
+    "Product damaged",
+    "Poor packaging"
+  ],
+  "turns": [],
+  "final_analysis": {
+    "transcription": "Price is reasonable for the value",
+    "conversationalResponse": "We really appreciate your patience and feedback. This information is valuable to us.",
+    "requiresFollowUp": false,
+    "conversationComplete": true,
+    "score": 10
+  },
+  "metadata": {
+    "total_turns": 0,
+    "completed_at": "2025-10-21T16:59:41.218604Z"
+  },
+  "saved_at": "2025-10-21T16:59:41.218604Z"
+}

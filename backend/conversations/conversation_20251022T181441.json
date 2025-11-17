@@ -1,0 +1,27 @@
+{
+  "score": 3,
+  "sentiment": "Disappointed",
+  "initial_transcription": "Easy to use and intuitive",
+  "initial_feedback_points": [
+    "Fast delivery",
+    "Good communication"
+  ],
+  "turns": [
+    {
+      "user": "It has everything I was looking for",
+      "ai": "That's wonderful feedback! We're so happy you're enjoying the product."
+    }
+  ],
+  "final_analysis": {
+    "transcription": "It has everything I was looking for",
+    "conversationalResponse": "That's wonderful feedback! We're so happy you're enjoying the product.",
+    "requiresFollowUp": false,
+    "conversationComplete": true,
+    "score": 3
+  },
+  "metadata": {
+    "total_turns": 1,
+    "completed_at": "2025-10-22T18:14:41.220110Z"
+  },
+  "saved_at": "2025-10-22T18:14:41.220110Z"
+}

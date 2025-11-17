@@ -1,0 +1,27 @@
+{
+  "score": 8,
+  "sentiment": "Neutral",
+  "initial_transcription": "Highly recommend this product",
+  "initial_feedback_points": [
+    "Easy to use",
+    "Intuitive design"
+  ],
+  "turns": [
+    {
+      "user": "The product quality is outstanding",
+      "ai": "Thank you for the detailed feedback. This helps us understand where we can improve."
+    }
+  ],
+  "final_analysis": {
+    "transcription": "The product quality is outstanding",
+    "conversationalResponse": "Thank you for the detailed feedback. This helps us understand where we can improve.",
+    "requiresFollowUp": false,
+    "conversationComplete": true,
+    "score": 8
+  },
+  "metadata": {
+    "total_turns": 1,
+    "completed_at": "2025-11-14T09:46:41.215993Z"
+  },
+  "saved_at": "2025-11-14T09:46:41.215993Z"
+}

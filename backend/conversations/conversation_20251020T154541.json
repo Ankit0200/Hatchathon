@@ -1,0 +1,27 @@
+{
+  "score": 5,
+  "sentiment": "Frustrated",
+  "initial_transcription": "Great customer service, very helpful",
+  "initial_feedback_points": [
+    "Slow checkout",
+    "Confusing navigation"
+  ],
+  "turns": [
+    {
+      "user": "The product arrived in perfect condition",
+      "ai": "That's helpful context. Could you tell me which specific part was the most frustrating?"
+    }
+  ],
+  "final_analysis": {
+    "transcription": "The product arrived in perfect condition",
+    "conversationalResponse": "That's helpful context. Could you tell me which specific part was the most frustrating?",
+    "requiresFollowUp": false,
+    "conversationComplete": true,
+    "score": 5
+  },
+  "metadata": {
+    "total_turns": 1,
+    "completed_at": "2025-10-20T15:45:41.216587Z"
+  },
+  "saved_at": "2025-10-20T15:45:41.216587Z"
+}

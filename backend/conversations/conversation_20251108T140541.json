@@ -1,0 +1,31 @@
+{
+  "score": 4,
+  "sentiment": "Negative",
+  "initial_transcription": "Recommend to friends and family",
+  "initial_feedback_points": [
+    "Poor customer service",
+    "Long wait times"
+  ],
+  "turns": [
+    {
+      "user": "The product broke after just one week",
+      "ai": "Thank you for your feedback. We've noted your concerns and will work on improvements."
+    },
+    {
+      "user": "It took about 5 minutes just to complete one purchase",
+      "ai": "That's wonderful to hear! We're so glad you had a positive experience."
+    }
+  ],
+  "final_analysis": {
+    "transcription": "It took about 5 minutes just to complete one purchase",
+    "conversationalResponse": "That's wonderful to hear! We're so glad you had a positive experience.",
+    "requiresFollowUp": false,
+    "conversationComplete": true,
+    "score": 4
+  },
+  "metadata": {
+    "total_turns": 2,
+    "completed_at": "2025-11-08T14:05:41.220503Z"
+  },
+  "saved_at": "2025-11-08T14:05:41.220503Z"
+}

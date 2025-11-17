@@ -1,0 +1,22 @@
+{
+  "score": 10,
+  "sentiment": "Satisfied",
+  "initial_transcription": "Very satisfied with the purchase",
+  "initial_feedback_points": [
+    "Poor quality",
+    "Not as described"
+  ],
+  "turns": [],
+  "final_analysis": {
+    "transcription": "Very satisfied with the purchase",
+    "conversationalResponse": "Thank you for bringing this to our attention. We'll make sure to address this issue.",
+    "requiresFollowUp": false,
+    "conversationComplete": true,
+    "score": 10
+  },
+  "metadata": {
+    "total_turns": 0,
+    "completed_at": "2025-10-21T03:02:41.217293Z"
+  },
+  "saved_at": "2025-10-21T03:02:41.217293Z"
+}

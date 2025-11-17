@@ -1,0 +1,35 @@
+{
+  "score": 1,
+  "sentiment": "Frustrated",
+  "initial_transcription": "Had issues with payment processing",
+  "initial_feedback_points": [
+    "Poor customer service",
+    "Long wait times"
+  ],
+  "turns": [
+    {
+      "user": "The checkout page kept freezing when I tried to pay",
+      "ai": "Thank you for sharing that. Could you provide a bit more detail about what went wrong?"
+    },
+    {
+      "user": "The checkout page kept freezing when I tried to pay",
+      "ai": "That's wonderful feedback! We're so happy you're enjoying the product."
+    },
+    {
+      "user": "The customer support team was excellent",
+      "ai": "I understand your concern. Let me see what we can do to address this issue."
+    }
+  ],
+  "final_analysis": {
+    "transcription": "The customer support team was excellent",
+    "conversationalResponse": "I understand your concern. Let me see what we can do to address this issue.",
+    "requiresFollowUp": false,
+    "conversationComplete": true,
+    "score": 1
+  },
+  "metadata": {
+    "total_turns": 3,
+    "completed_at": "2025-11-17T14:06:41.216810Z"
+  },
+  "saved_at": "2025-11-17T14:06:41.216810Z"
+}

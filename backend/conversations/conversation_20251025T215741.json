@@ -1,0 +1,27 @@
+{
+  "score": 4,
+  "sentiment": "Negative",
+  "initial_transcription": "Not worth the price",
+  "initial_feedback_points": [
+    "Fast shipping",
+    "Good packaging"
+  ],
+  "turns": [
+    {
+      "user": "I don't think it's worth the money",
+      "ai": "We're sorry for the inconvenience. Could you share more details about what happened?"
+    }
+  ],
+  "final_analysis": {
+    "transcription": "I don't think it's worth the money",
+    "conversationalResponse": "We're sorry for the inconvenience. Could you share more details about what happened?",
+    "requiresFollowUp": false,
+    "conversationComplete": true,
+    "score": 4
+  },
+  "metadata": {
+    "total_turns": 1,
+    "completed_at": "2025-10-25T21:57:41.218946Z"
+  },
+  "saved_at": "2025-10-25T21:57:41.218946Z"
+}

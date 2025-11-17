@@ -1,0 +1,31 @@
+{
+  "score": 0,
+  "sentiment": "Disappointed",
+  "initial_transcription": "Highly recommend this product",
+  "initial_feedback_points": [
+    "Excellent quality",
+    "Great value"
+  ],
+  "turns": [
+    {
+      "user": "The product arrived in perfect condition",
+      "ai": "That's wonderful to hear! We're so glad you had a positive experience."
+    },
+    {
+      "user": "The shipping was delayed by a week",
+      "ai": "That's helpful context. Could you tell me which specific part was the most frustrating?"
+    }
+  ],
+  "final_analysis": {
+    "transcription": "The shipping was delayed by a week",
+    "conversationalResponse": "That's helpful context. Could you tell me which specific part was the most frustrating?",
+    "requiresFollowUp": false,
+    "conversationComplete": true,
+    "score": 0
+  },
+  "metadata": {
+    "total_turns": 2,
+    "completed_at": "2025-11-02T07:35:41.217916Z"
+  },
+  "saved_at": "2025-11-02T07:35:41.217916Z"
+}

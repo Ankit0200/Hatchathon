@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>NPS Widget Demo</title>
+</head>
+<body>
+  <h2>NPS Widget demo</h2>
+  <p>This demo shows how to include the embeddable NPS widget script and initialize it.
+  Make sure your FastAPI server is running (server.py runs at <code>http://127.0.0.1:8000</code> by default).</p>
+
+  <p>Click the floating star in the lower-right to open the widget.</p>
+
+  <!-- Load the widget script (local path relative to this demo file) -->
+  <script src="./static/nps-widget.js"></script>
+  <script>
+    // Initialize with the backend endpoint that accepts FormData (score + audio_data)
+    if (window.NPSWidget) {
+      NPSWidget.init({ backendUrl: 'http://127.0.0.1:8000/submit_feedback' });
+    } else {
+      console.error('NPSWidget not loaded');
+    }
+    
+  </script>
+</body>
+</html>

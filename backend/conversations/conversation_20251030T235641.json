@@ -1,0 +1,22 @@
+{
+  "score": 9,
+  "sentiment": "Positive",
+  "initial_transcription": "The checkout process was slow and confusing",
+  "initial_feedback_points": [
+    "Great product",
+    "Meets expectations"
+  ],
+  "turns": [],
+  "final_analysis": {
+    "transcription": "The checkout process was slow and confusing",
+    "conversationalResponse": "Thank you for the positive feedback! We're glad we could meet your expectations.",
+    "requiresFollowUp": false,
+    "conversationComplete": true,
+    "score": 9
+  },
+  "metadata": {
+    "total_turns": 0,
+    "completed_at": "2025-10-30T23:56:41.216513Z"
+  },
+  "saved_at": "2025-10-30T23:56:41.216513Z"
+}

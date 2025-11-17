@@ -1,0 +1,27 @@
+{
+  "score": 2,
+  "sentiment": "Negative",
+  "initial_transcription": "Packaging was poor quality",
+  "initial_feedback_points": [
+    "Love the design",
+    "Great features"
+  ],
+  "turns": [
+    {
+      "user": "The design is beautiful and modern",
+      "ai": "Thank you for sharing that. Could you provide a bit more detail about what went wrong?"
+    }
+  ],
+  "final_analysis": {
+    "transcription": "The design is beautiful and modern",
+    "conversationalResponse": "Thank you for sharing that. Could you provide a bit more detail about what went wrong?",
+    "requiresFollowUp": false,
+    "conversationComplete": true,
+    "score": 2
+  },
+  "metadata": {
+    "total_turns": 1,
+    "completed_at": "2025-11-05T20:57:41.221883Z"
+  },
+  "saved_at": "2025-11-05T20:57:41.221883Z"
+}

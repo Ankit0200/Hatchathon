@@ -11,10 +11,11 @@ import json
 import re
 import tempfile
 import traceback
-from datetime import datetime
-from typing import Optional, Dict, Any
+from collections import Counter
+from datetime import datetime, timezone, timedelta
+from typing import Optional, Dict, Any, List
 
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
 # make sure google.generativeai is installed and compatible with your env
@@ -49,7 +50,7 @@ generation_config = GenerationConfig(response_mime_type="application/json")
 
 # --- Prompts (kept from your original) ---
 AI_PROMPT = """You are a conversational customer feedback analyst. Your job is to analyze 
-NPS (Net Promoter Score) feedback and decide the correct response.
+customer feedback and decide the correct response.
 
 The user gave a score of: {NPS_SCORE}/10
 Here is their feedback (either audio or text):
@@ -81,7 +82,7 @@ Instructions:
 FOLLOWUP_PROMPT = """You are continuing a customer feedback conversation. Here is the full conversation history:
 
 **Initial Feedback:**
-- NPS Score: {NPS_SCORE}/10
+- Rating: {NPS_SCORE}/10
 - User said: "{INITIAL_TRANSCRIPTION}"
 
 **Conversation History:**
@@ -177,11 +178,200 @@ async def safe_delete_genai_file(handle):
         print("Warning deleting genai file:", e)
 
 
+def parse_iso_datetime(value: Optional[str]) -> Optional[datetime]:
+    """
+    Parse ISO date/datetime strings, returning timezone-aware datetime.
+    Accepts formats like '2025-01-01' or '2025-01-01T12:00:00Z'.
+    """
+    if not value:
+        return None
+
+    try:
+        # Handle trailing Z
+        if value.endswith("Z"):
+            value = value[:-1] + "+00:00"
+        dt = datetime.fromisoformat(value)
+    except ValueError:
+        try:
+            dt = datetime.strptime(value, "%Y-%m-%d")
+        except ValueError:
+            raise ValueError("Invalid date format. Use ISO format YYYY-MM-DD or YYYY-MM-DDTHH:MM:SSZ")
+
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+
+    return dt
+
+
+def filter_records_by_date(records: List[Dict[str, Any]], start: Optional[str], end: Optional[str]) -> List[Dict[str, Any]]:
+    """
+    Filter conversation records by saved_at timestamp using optional start/end strings.
+    """
+    start_dt = parse_iso_datetime(start) if start else None
+    end_dt = parse_iso_datetime(end) if end else None
+
+    if end_dt:
+        # include entire day if only date provided (no time component)
+        if end_dt.hour == 0 and end_dt.minute == 0 and end_dt.second == 0 and end_dt.microsecond == 0:
+            end_dt = end_dt + timedelta(days=1) - timedelta(microseconds=1)
+
+    filtered = []
+    for record in records:
+        saved_at = record.get("saved_at")
+        saved_dt = parse_iso_datetime(saved_at) if saved_at else None
+        if saved_dt is None:
+            continue
+
+        if start_dt and saved_dt < start_dt:
+            continue
+        if end_dt and saved_dt > end_dt:
+            continue
+        filtered.append(record)
+
+    return filtered
+
+
+def load_conversation_records(directory: str = CONVERSATIONS_DIR) -> List[Dict[str, Any]]:
+    """
+    Read all JSON files from conversations directory and return list of records.
+    """
+    if not os.path.isdir(directory):
+        return []
+
+    records: List[Dict[str, Any]] = []
+    for filename in sorted(os.listdir(directory)):
+        if not filename.endswith(".json"):
+            continue
+
+        path = os.path.join(directory, filename)
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except Exception as exc:
+            print(f"Failed reading {filename}: {exc}")
+            continue
+
+        final_analysis = data.get("final_analysis", {})
+        turns = data.get("turns", [])
+
+        record = {
+            "filename": filename,
+            "saved_at": data.get("saved_at"),
+            "score": data.get("score"),
+            "sentiment": data.get("sentiment") or final_analysis.get("sentiment"),
+            "requires_followup": final_analysis.get("requiresFollowUp"),
+            "conversation_complete": final_analysis.get("conversationComplete"),
+            "total_turns": len(turns),
+            "initial_transcription": data.get("initial_transcription"),
+            "final_transcription": final_analysis.get("transcription"),
+            "final_response": final_analysis.get("conversationalResponse"),
+            "initial_feedback_points": data.get("initial_feedback_points")
+            or data.get("initial_feedback")
+            or [],
+        }
+        records.append(record)
+
+    return records
+
+
+def compute_analytics(records: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """
+    Compute summary stats + top feedback themes.
+    """
+    if not records:
+        return {}
+
+    # Scores
+    numeric_scores = [r["score"] for r in records if isinstance(r["score"], (int, float))]
+    avg_score = round(sum(numeric_scores) / len(numeric_scores), 2) if numeric_scores else None
+    median_score = None
+    if numeric_scores:
+        sorted_scores = sorted(numeric_scores)
+        mid = len(sorted_scores) // 2
+        if len(sorted_scores) % 2 == 0:
+            median_score = round((sorted_scores[mid - 1] + sorted_scores[mid]) / 2, 2)
+        else:
+            median_score = round(sorted_scores[mid], 2)
+
+    # Sentiment breakdown
+    sentiment_counter = Counter(
+        (r.get("sentiment") or "Unknown") for r in records
+    )
+
+    # Follow-up stats
+    followup_flags = [bool(r.get("requires_followup")) for r in records if r.get("requires_followup") is not None]
+    followup_pct = round(100 * sum(followup_flags) / len(followup_flags), 2) if followup_flags else 0.0
+
+    completion_flags = [bool(r.get("conversation_complete")) for r in records if r.get("conversation_complete") is not None]
+    completed_pct = round(100 * sum(completion_flags) / len(completion_flags), 2) if completion_flags else 0.0
+
+    # Turns
+    turns_list = [r.get("total_turns", 0) for r in records]
+    avg_turns = round(sum(turns_list) / len(turns_list), 2) if turns_list else 0.0
+    max_turns = max(turns_list) if turns_list else 0
+
+    # Feedback themes
+    feedback_counter = Counter()
+    for r in records:
+        points = r.get("initial_feedback_points") or []
+        if isinstance(points, list):
+            feedback_counter.update([p.strip() for p in points if p])
+
+    top_feedback = [{"text": text, "count": count} for text, count in feedback_counter.most_common(5)]
+
+    return {
+        "total_conversations": len(records),
+        "avg_score": avg_score,
+        "median_score": median_score,
+        "sentiment_breakdown": sentiment_counter,
+        "followup_required_pct": followup_pct,
+        "completed_pct": completed_pct,
+        "avg_turns": avg_turns,
+        "max_turns": max_turns,
+        "top_feedback": top_feedback,
+    }
+
+
 # --- Endpoints ---
 
 @app.get("/health")
 async def health():
     return {"status": "ok", "time": datetime.utcnow().isoformat() + "Z"}
+
+
+@app.get("/analytics/summary")
+async def analytics_summary(
+    start_date: Optional[str] = Query(None, description="ISO date or datetime (inclusive)"),
+    end_date: Optional[str] = Query(None, description="ISO date or datetime (inclusive)"),
+):
+    """
+    Returns summarized analytics for all saved conversations.
+    """
+    records = load_conversation_records(CONVERSATIONS_DIR)
+    if not records:
+        raise HTTPException(status_code=404, detail="No saved conversations found")
+
+    filtered_records = filter_records_by_date(records, start_date, end_date) if (start_date or end_date) else records
+
+    if not filtered_records:
+        raise HTTPException(status_code=404, detail="No conversations found for the selected timeframe")
+
+    summary = compute_analytics(filtered_records)
+    top_feedback = summary.pop("top_feedback", [])
+    sentiment_breakdown = summary.get("sentiment_breakdown", {})
+    return {
+        "summary": {
+            **summary,
+            "sentiment_breakdown": dict(sentiment_breakdown),
+        },
+        "top_feedback": top_feedback,
+        "conversations": filtered_records,
+        "filters": {
+            "start_date": start_date,
+            "end_date": end_date,
+            "total_available": len(records),
+        },
+    }
 
 
 @app.post("/submit_feedback")
@@ -237,7 +427,6 @@ async def submit_feedback(
 
         text = getattr(response, "text", None) or getattr(response, "content", None) or str(response)
         print("Raw model response (truncated):", text[:800])
-
         try:
             parsed = extract_json_from_text(text)
         except ValueError as e:
@@ -298,7 +487,7 @@ async def submit_feedback(
 
 @app.post("/submit_followup")
 async def submit_followup(
-    score: int = Form(..., description="Original NPS score from 0-10"),
+    score: int = Form(..., description="Original rating score from 0-10"),
     conversation_history: str = Form(..., description="Full conversation history as JSON string"),
     transcription: str = Form(None, description="Pre-transcribed text (faster, optional)"),
     audio_data: UploadFile = File(None, description="Follow-up audio file (fallback if no transcription)")
@@ -308,7 +497,6 @@ async def submit_followup(
     try:
         if score < 0 or score > 10:
             raise HTTPException(status_code=400, detail="Score must be 0-10")
-
         try:
             history = json.loads(conversation_history)
         except Exception:

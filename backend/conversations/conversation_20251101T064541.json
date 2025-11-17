@@ -1,0 +1,22 @@
+{
+  "score": 9,
+  "sentiment": "Positive",
+  "initial_transcription": "Had to contact support multiple times",
+  "initial_feedback_points": [
+    "Fast delivery",
+    "Good communication"
+  ],
+  "turns": [],
+  "final_analysis": {
+    "transcription": "Had to contact support multiple times",
+    "conversationalResponse": "We're sorry for the inconvenience. Could you share more details about what happened?",
+    "requiresFollowUp": false,
+    "conversationComplete": true,
+    "score": 9
+  },
+  "metadata": {
+    "total_turns": 0,
+    "completed_at": "2025-11-01T06:45:41.215530Z"
+  },
+  "saved_at": "2025-11-01T06:45:41.215530Z"
+}

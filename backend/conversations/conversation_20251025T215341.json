@@ -1,0 +1,27 @@
+{
+  "score": 7,
+  "sentiment": "Positive",
+  "initial_transcription": "Mobile app crashes frequently",
+  "initial_feedback_points": [
+    "Website bugs",
+    "Technical issues"
+  ],
+  "turns": [
+    {
+      "user": "I love how it looks in my home",
+      "ai": "Thank you for your detailed feedback. This is exactly the kind of information we need."
+    }
+  ],
+  "final_analysis": {
+    "transcription": "I love how it looks in my home",
+    "conversationalResponse": "Thank you for your detailed feedback. This is exactly the kind of information we need.",
+    "requiresFollowUp": false,
+    "conversationComplete": true,
+    "score": 7
+  },
+  "metadata": {
+    "total_turns": 1,
+    "completed_at": "2025-10-25T21:53:41.218111Z"
+  },
+  "saved_at": "2025-10-25T21:53:41.218111Z"
+}

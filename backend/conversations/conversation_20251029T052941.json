@@ -1,0 +1,22 @@
+{
+  "score": 8,
+  "sentiment": "Neutral",
+  "initial_transcription": "Product didn't match description",
+  "initial_feedback_points": [
+    "Support unhelpful",
+    "No resolution"
+  ],
+  "turns": [],
+  "final_analysis": {
+    "transcription": "Product didn't match description",
+    "conversationalResponse": "I'm sorry you had that experience. We take all feedback seriously and will look into this.",
+    "requiresFollowUp": false,
+    "conversationComplete": true,
+    "score": 8
+  },
+  "metadata": {
+    "total_turns": 0,
+    "completed_at": "2025-10-29T05:29:41.218871Z"
+  },
+  "saved_at": "2025-10-29T05:29:41.218871Z"
+}
