@@ -288,8 +288,8 @@ function Dashboard() {
 
   const trendData = data?.conversations
     ? data.conversations
-        .filter((c) => c.saved_at)
-        .sort((a, b) => new Date(a.saved_at) - new Date(b.saved_at))
+      .filter((c) => c.saved_at)
+      .sort((a, b) => new Date(a.saved_at) - new Date(b.saved_at))
         .map((c) => ({
           date: new Date(c.saved_at).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
           score: c.score || 0,
@@ -312,11 +312,11 @@ function Dashboard() {
           return acc;
         }, {})
       )
-        .map(([turns, count]) => ({
-          turns: Number(turns),
+      .map(([turns, count]) => ({
+        turns: Number(turns),
           label: `${turns} turn${turns > 1 ? "s" : ""}`,
-          count,
-        }))
+        count,
+      }))
         .sort((a, b) => a.turns - b.turns)
     : [];
 
@@ -363,11 +363,11 @@ function Dashboard() {
               <p className="error-message">{errorMsg}</p>
               <div className="error-actions">
                 <button className="error-btn error-btn-primary" onClick={() => fetchData({})}>
-                  Retry
-                </button>
+              Retry
+            </button>
                 <button className="error-btn error-btn-secondary" onClick={() => navigate('/')}>
                   Go Home
-                </button>
+            </button>
               </div>
             </div>
           </div>
@@ -377,9 +377,9 @@ function Dashboard() {
 
   if (!data) return null;
 
-  const summary = data.summary;
+  const summary = data.summary || {};
 
-  return (
+    return (
     <div className="dashboard-container">
       {/* Animated Background Gradient */}
       <div className="animated-background"></div>
@@ -412,15 +412,15 @@ function Dashboard() {
 
           {/* Stats Grid */}
           <div className="summary-grid">
-            <StatCard label="Total Conversations" value={summary.total_conversations} iconComponent={faComments} />
+            <StatCard label="Total Conversations" value={summary?.total_conversations || 0} iconComponent={faComments} />
             <StatCard
               label="Average Rating"
-              value={summary.avg_score?.toFixed(1) || "N/A"}
+              value={summary?.avg_score ? summary.avg_score.toFixed(1) : "N/A"}
               iconComponent={faStar}
-              trend={summary.avg_score >= 7 ? "up" : "down"}
+              trend={summary?.avg_score && summary.avg_score >= 7 ? "up" : "down"}
             />
-            <StatCard label="Follow-ups Needed" value={`${summary.followup_required_pct}%`} iconComponent={faSync} />
-            <StatCard label="Avg Turns" value={summary.avg_turns?.toFixed(1)} iconComponent={faChartLine} />
+            <StatCard label="Follow-ups Needed" value={`${summary?.followup_required_pct || 0}%`} iconComponent={faSync} />
+            <StatCard label="Avg Turns" value={summary?.avg_turns ? summary.avg_turns.toFixed(1) : "0.0"} iconComponent={faChartLine} />
           </div>
 
           {/* Charts Grid */}
@@ -455,10 +455,10 @@ function Dashboard() {
             <BarSection title="Turns Distribution" data={turnsData} dataKey="count" nameKey="label" />
           </div>
         </div>
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
 
 const ttStyle = {
   backgroundColor: "rgba(255,255,255,0.98)",
@@ -482,7 +482,7 @@ function Header({ appliedLabel, timeframe, setTimeframe, navigate }) {
   return (
     <header className="dashboard-header">
       <div className="header-content">
-        <div>
+              <div>
           <div className="header-title-wrapper">
             <button onClick={() => navigate('/')} className="home-btn">
               <FontAwesomeIcon icon={faHome} className="home-icon" />
@@ -491,19 +491,19 @@ function Header({ appliedLabel, timeframe, setTimeframe, navigate }) {
             <h1 className="dashboard-title">Analytics Dashboard</h1>
           </div>
           <div className="range-label">{appliedLabel.replace("Demo Mode - ", "")}</div>
-        </div>
+              </div>
         <div className="header-controls">
           {presets.map((preset) => (
-            <button
+                  <button
               key={preset.key}
               onClick={() => setTimeframe(preset.key)}
               className={`timeframe-select ${timeframe === preset.key ? "active" : ""}`}
-            >
+                  >
               {preset.label}
-            </button>
+                  </button>
           ))}
-        </div>
-      </div>
+              </div>
+            </div>
     </header>
   );
 }
@@ -514,37 +514,37 @@ function CustomRange({ start, end, setStart, setEnd, onApply }) {
       <div className="custom-range-inputs">
         <div className="date-input-group">
           <label>Start Date</label>
-          <input
-            type="date"
+                  <input
+                    type="date"
             value={start}
             onChange={(e) => setStart(e.target.value)}
             className="date-input"
-          />
-        </div>
+                  />
+                </div>
         <div className="date-input-group">
           <label>End Date</label>
-          <input
-            type="date"
+                  <input
+                    type="date"
             value={end}
             onChange={(e) => setEnd(e.target.value)}
             className="date-input"
-          />
-        </div>
+                  />
+                </div>
         <div className="date-input-actions">
           <button onClick={onApply} className="apply-btn">
-            Apply
-          </button>
-          <button
-            onClick={() => {
+                    Apply
+                  </button>
+                  <button
+                    onClick={() => {
               setStart("");
               setEnd("");
-            }}
+                    }}
             className="reset-btn"
-          >
-            Reset
-          </button>
-        </div>
-      </div>
+                  >
+                    Reset
+                  </button>
+                </div>
+              </div>
     </div>
   );
 }
@@ -567,9 +567,9 @@ function StatCard({ label, value, iconComponent, trend }) {
         </div>
         <div className="summary-icon">
           <FontAwesomeIcon icon={iconComponent} className="summary-icon-svg" />
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
   );
 }
 
@@ -582,27 +582,27 @@ function PieSection({ title, data, colors }) {
       <div className="chart-content">
         <div className="pie-chart-container">
           <ResponsiveContainer width="100%" height={250}>
-            <PieChart>
-              <Pie
+              <PieChart>
+                <Pie
                 data={data}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                 outerRadius={80}
-                fill="#8884d8"
-                dataKey="value"
+                  fill="#8884d8"
+                  dataKey="value"
               >
                 {data.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS_ARRAY[index % COLORS_ARRAY.length]} />
-                ))}
-              </Pie>
+                  ))}
+                </Pie>
               <Tooltip contentStyle={ttStyle} />
-            </PieChart>
-          </ResponsiveContainer>
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
         </div>
-      </div>
-    </div>
+          </div>
   );
 }
 
@@ -613,15 +613,15 @@ function BarSection({ title, data, dataKey, nameKey }) {
     <div className="chart-card">
       <h3 className="chart-title">{title}</h3>
       <div className="chart-content">
-        <ResponsiveContainer width="100%" height={300}>
+          <ResponsiveContainer width="100%" height={300}>
           <BarChart data={data}>
             <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" opacity={0.6} />
             <XAxis dataKey={nameKey} stroke="#475569" fontSize={11} fontWeight="500" />
             <YAxis stroke="#475569" fontSize={11} fontWeight="500" />
             <Tooltip contentStyle={ttStyle} />
             <Bar dataKey={dataKey} fill="#6366F1" radius={[8, 8, 0, 0]} />
-          </BarChart>
-        </ResponsiveContainer>
+            </BarChart>
+          </ResponsiveContainer>
       </div>
     </div>
   );

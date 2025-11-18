@@ -227,21 +227,27 @@ function VoiceNPSChat() {
     try {
       const utterance = new SpeechSynthesisUtterance(text);
       
-      // Configure voice settings for natural speech
-      utterance.rate = 1.0; // Normal speed
-      utterance.pitch = 1.0; // Normal pitch
+      // Configure voice settings for sweet and fast speech
+      utterance.rate = 1.3; // Faster speed (1.3x normal)
+      utterance.pitch = 1.15; // Slightly higher pitch for sweeter tone
       utterance.volume = 1.0; // Full volume
       utterance.lang = 'en-US';
 
-      // Try to use a more natural voice if available
+      // Try to use a sweeter, more pleasant voice if available (prioritize female voices)
       const voices = window.speechSynthesis.getVoices();
       const preferredVoices = voices.filter(voice => 
         voice.lang.startsWith('en') && 
         (voice.name.includes('Samantha') || 
-         voice.name.includes('Alex') || 
          voice.name.includes('Victoria') ||
-         voice.name.includes('Google') ||
-         voice.name.includes('Natural'))
+         voice.name.includes('Karen') ||
+         voice.name.includes('Kate') ||
+         voice.name.includes('Fiona') ||
+         voice.name.includes('Tessa') ||
+         voice.name.includes('Google UK English Female') ||
+         voice.name.includes('Google US English Female') ||
+         voice.name.includes('Microsoft Zira') ||
+         voice.name.includes('Natural') ||
+         voice.name.includes('Enhanced'))
       );
       
       if (preferredVoices.length > 0) {
@@ -276,11 +282,22 @@ function VoiceNPSChat() {
           const updatedVoices = window.speechSynthesis.getVoices();
           const preferred = updatedVoices.filter(voice => 
             voice.lang.startsWith('en') && 
-            (voice.name.includes('Samantha') || voice.name.includes('Alex'))
+            (voice.name.includes('Samantha') || 
+             voice.name.includes('Victoria') ||
+             voice.name.includes('Karen') ||
+             voice.name.includes('Kate') ||
+             voice.name.includes('Fiona') ||
+             voice.name.includes('Tessa') ||
+             voice.name.includes('Google UK English Female') ||
+             voice.name.includes('Google US English Female') ||
+             voice.name.includes('Microsoft Zira'))
           );
           if (preferred.length > 0) {
             utterance.voice = preferred[0];
           }
+          // Ensure speed and pitch are set
+          utterance.rate = 1.3;
+          utterance.pitch = 1.15;
           window.speechSynthesis.speak(utterance);
         };
       } else {
@@ -298,11 +315,18 @@ function VoiceNPSChat() {
         const response = await axios.get(`${BACKEND_URL}/health`, { timeout: 5000 });
         console.log("✅ Backend connected:", response.data);
         console.log("🌐 Backend URL:", BACKEND_URL);
+        // Clear any previous connection errors
+        if (error && error.includes("Cannot connect to backend")) {
+          setError("");
+        }
       } catch (err) {
         console.error("❌ Backend not reachable at", BACKEND_URL);
         console.error("Error details:", err.message);
         console.warn("Make sure backend server is running: python backend/server.py");
-        setError(`Cannot connect to backend at ${BACKEND_URL}. Please ensure the backend server is running.`);
+        // Only set error if it's a real connection issue, not just a check
+        if (err.code === 'ECONNREFUSED' || err.message?.includes('Network Error') || err.message?.includes('Failed to fetch')) {
+          setError(`Cannot connect to backend at ${BACKEND_URL}. Please ensure the backend server is running.`);
+        }
       }
     };
     
