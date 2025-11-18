@@ -138,6 +138,7 @@ function Scene3D() {
 function Dashboard() {
   const navigate = useNavigate();
   const [data, setData] = useState(null);
+  const [topFocusAreas, setTopFocusAreas] = useState(null);
   const [timeframe, setTimeframe] = useState("30d");
   const [appliedRangeLabel, setAppliedRangeLabel] = useState("Last 30 days");
   const [customStart, setCustomStart] = useState("");
@@ -228,6 +229,33 @@ function Dashboard() {
     };
   };
 
+  const fetchTopFocusAreas = async ({ start_date = null, end_date = null }) => {
+    try {
+      const response = await axios.get(`${BACKEND_URL}/analytics/top-focus-areas`, {
+        params: { ...(start_date && { start_date }), ...(end_date && { end_date }) },
+        timeout: 10000, // Longer timeout for AI processing
+      });
+      setTopFocusAreas(response.data);
+    } catch (error) {
+      console.warn("Failed to fetch top focus areas:", error);
+      // Set demo data if backend unavailable
+      if (error.code === 'ECONNREFUSED' || error.message?.includes('Network Error') || error.message?.includes('Failed to fetch')) {
+        setTopFocusAreas({
+          top_focus_areas: [
+            { title: "Improve Customer Support Response Time", explanation: "Multiple customers mentioned slow response times. Quicker support would significantly improve satisfaction." },
+            { title: "Enhance Product Quality", explanation: "Several feedback points highlighted quality concerns. Focusing on product improvements is crucial." },
+            { title: "Streamline User Experience", explanation: "Users mentioned usability issues. Simplifying the interface could reduce friction." }
+          ]
+        });
+      } else if (error.response?.status === 404 && error.response?.data?.detail?.includes("No negative or frustrated feedback")) {
+        // No negative feedback found - don't show the section
+        setTopFocusAreas(null);
+      } else {
+        setTopFocusAreas(null);
+      }
+    }
+  };
+
   const fetchData = async ({ start_date = null, end_date = null, label = "All Time" }) => {
     try {
       setLoading(true);
@@ -240,12 +268,17 @@ function Dashboard() {
 
       setData(response.data);
       setAppliedRangeLabel(label);
+      
+      // Also fetch top focus areas
+      await fetchTopFocusAreas({ start_date, end_date });
     } catch (error) {
       if (error.code === 'ECONNREFUSED' || error.message?.includes('Network Error') || error.message?.includes('Failed to fetch') || error.code === 'ECONNABORTED') {
         const demoData = getDemoData();
         setData(demoData);
         setAppliedRangeLabel("Demo Mode - " + label);
         setErrorMsg("");
+        // Fetch demo focus areas too
+        await fetchTopFocusAreas({ start_date, end_date });
       } else if (error.response?.status === 404) {
         const detail = error.response?.data?.detail || "";
         if (detail.includes("No saved conversations")) {
@@ -271,6 +304,7 @@ function Dashboard() {
       end_date: customEnd,
       label: `Custom: ${customStart} → ${customEnd}`,
     });
+    // fetchTopFocusAreas is already called inside fetchData
   };
 
   const ratingCategory = (score) => (score >= 9 ? "High" : score >= 7 ? "Medium" : "Low");
@@ -408,6 +442,11 @@ function Dashboard() {
               setEnd={setCustomEnd}
               onApply={handleCustomApply}
             />
+          )}
+
+          {/* Top 3 Focus Areas */}
+          {topFocusAreas && topFocusAreas.top_focus_areas && (
+            <TopFocusSection focusAreas={topFocusAreas.top_focus_areas} />
           )}
 
           {/* Stats Grid */}
@@ -632,6 +671,28 @@ function FullChart({ title, children }) {
     <div className="chart-card chart-card-full">
       <h3 className="chart-title">{title}</h3>
       <div className="chart-content">{children}</div>
+    </div>
+  );
+}
+
+function TopFocusSection({ focusAreas }) {
+  return (
+    <div className="top-focus-section">
+      <div className="top-focus-header">
+        <h2 className="top-focus-title">Top 3 Things to Focus On</h2>
+        <p className="top-focus-subtitle">AI-generated insights based on negative and frustrated customer feedback</p>
+      </div>
+      <div className="top-focus-grid">
+        {focusAreas.map((area, index) => (
+          <div key={index} className="top-focus-card">
+            <div className="top-focus-number">{index + 1}</div>
+            <div className="top-focus-content">
+              <h3 className="top-focus-card-title">{area.title}</h3>
+              <p className="top-focus-card-explanation">{area.explanation}</p>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
