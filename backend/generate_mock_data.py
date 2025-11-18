@@ -239,17 +239,43 @@ def generate_mock_conversation(index):
     return conversation
 
 def main():
-    """Generate 50 mock conversation files."""
-    print("Generating 50 mock conversation files...")
+    """Generate 20 mock conversation files with good mix of sentiments."""
+    print("Generating 20 mock conversation files...")
     
     # Clear existing mock files (optional - comment out if you want to keep real data)
     # for filename in os.listdir(CONVERSATIONS_DIR):
     #     if filename.startswith("conversation_") and filename.endswith(".json"):
     #         os.remove(os.path.join(CONVERSATIONS_DIR, filename))
     
-    # Generate 50 conversations
-    for i in range(50):
+    # Generate 20 conversations with better distribution
+    # Ensure we have a good mix of negative/frustrated for the focus areas feature
+    conversations_to_generate = 20
+    
+    # Pre-define some conversations to ensure variety
+    # 8 negative/frustrated (40%), 6 positive (30%), 6 neutral/mixed (30%)
+    sentiment_distribution = [
+        "Negative", "Frustrated", "Negative", "Frustrated", 
+        "Disappointed", "Negative", "Frustrated", "Angry",
+        "Positive", "Happy", "Satisfied", "Positive",
+        "Happy", "Satisfied", "Positive",
+        "Neutral", "Neutral", "Satisfied", "Neutral", "Positive"
+    ]
+    
+    for i in range(conversations_to_generate):
         conversation = generate_mock_conversation(i)
+        
+        # Override sentiment for better distribution if needed
+        if i < len(sentiment_distribution):
+            # Adjust score to match sentiment
+            if sentiment_distribution[i] in ["Negative", "Frustrated", "Disappointed", "Angry"]:
+                conversation["score"] = random.choice([1, 2, 3, 4, 5, 6])
+                conversation["sentiment"] = sentiment_distribution[i]
+            elif sentiment_distribution[i] in ["Positive", "Happy", "Satisfied"]:
+                conversation["score"] = random.choice([8, 9, 10])
+                conversation["sentiment"] = sentiment_distribution[i]
+            else:  # Neutral
+                conversation["score"] = random.choice([6, 7, 8])
+                conversation["sentiment"] = sentiment_distribution[i]
         
         # Create filename with timestamp
         timestamp_str = conversation["saved_at"].replace(":", "").replace("-", "").split(".")[0]
@@ -262,8 +288,9 @@ def main():
         
         print(f"✓ Generated {filename} (Score: {conversation['score']}, Sentiment: {conversation['sentiment']}, Turns: {len(conversation['turns'])})")
     
-    print(f"\n✅ Successfully generated 50 mock conversation files in {CONVERSATIONS_DIR}/")
+    print(f"\n✅ Successfully generated {conversations_to_generate} mock conversation files in {CONVERSATIONS_DIR}/")
     print("   Refresh your dashboard to see the new data!")
+    print("   Note: 8 conversations have negative/frustrated sentiment for 'Top 3 Focus Areas' feature")
 
 if __name__ == "__main__":
     main()
