@@ -612,7 +612,7 @@ function VoiceNPSChat() {
     console.log("✅ Starting follow-up submission");
     setLoading(true);
     setError("");
-    setCurrentResponse(null);
+    // Don't clear currentResponse - keep previous response visible during loading
 
     try {
       let audioBlob = null;
@@ -1019,9 +1019,10 @@ function VoiceNPSChat() {
             )}
 
             {/* AI Response Display - Moved Up */}
-            <AnimatePresence>
-              {(currentResponse?.conversationalResponse) && (
+            <AnimatePresence mode="wait">
+              {(currentResponse?.conversationalResponse || (loading && conversationHistory.length > 0)) && (
                 <motion.div
+                  key={currentResponse?.conversationalResponse || "loading"}
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
@@ -1037,28 +1038,46 @@ function VoiceNPSChat() {
                   }}
                 >
                   <div className="ai-response-content">
-                    <p 
-                      className="ai-response-text"
-                      style={{
-                        fontSize: "1.1rem",
-                        lineHeight: "1.7",
-                        color: "#4c1d95",
-                        fontWeight: "500",
-                        fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-                        letterSpacing: "0.3px"
-                      }}
-                    >
-                      {displayedText || currentResponse.conversationalResponse}
-                      {displayedText && displayedText.length < (currentResponse.conversationalResponse?.length || 0) && (
-                        <motion.span
-                          animate={{ opacity: [1, 0] }}
-                          transition={{ repeat: Infinity, duration: 0.8 }}
-                          style={{ marginLeft: "2px" }}
-                        >
-                          |
-                        </motion.span>
-                      )}
-                    </p>
+                    {loading && !currentResponse?.conversationalResponse ? (
+                      // Show last response from conversation history while loading
+                      <p 
+                        className="ai-response-text"
+                        style={{
+                          fontSize: "1.1rem",
+                          lineHeight: "1.7",
+                          color: "#4c1d95",
+                          fontWeight: "500",
+                          fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+                          letterSpacing: "0.3px",
+                          opacity: 0.7
+                        }}
+                      >
+                        {conversationHistory[conversationHistory.length - 1]?.aiResponse || "Processing..."}
+                      </p>
+                    ) : (
+                      <p 
+                        className="ai-response-text"
+                        style={{
+                          fontSize: "1.1rem",
+                          lineHeight: "1.7",
+                          color: "#4c1d95",
+                          fontWeight: "500",
+                          fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+                          letterSpacing: "0.3px"
+                        }}
+                      >
+                        {displayedText || currentResponse?.conversationalResponse}
+                        {displayedText && displayedText.length < (currentResponse?.conversationalResponse?.length || 0) && (
+                          <motion.span
+                            animate={{ opacity: [1, 0] }}
+                            transition={{ repeat: Infinity, duration: 0.8 }}
+                            style={{ marginLeft: "2px" }}
+                          >
+                            |
+                          </motion.span>
+                        )}
+                      </p>
+                    )}
                   </div>
                 </motion.div>
               )}
