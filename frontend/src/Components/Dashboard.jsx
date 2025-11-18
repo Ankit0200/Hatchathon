@@ -14,631 +14,416 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
+  AreaChart,
+  Area,
 } from "recharts";
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://127.0.0.1:8000";
+const BACKEND_URL =
+  import.meta.env.VITE_BACKEND_URL || "http://127.0.0.1:8000";
 
-const RATING_CATEGORY_COLORS = {
-  high: "#22C55E",
-  medium: "#FACC15",
-  low: "#F87171",
+// Color constants
+const RATING_COLORS = {
+  High: "#10B981",
+  Medium: "#F59E0B",
+  Low: "#EF4444",
 };
-
-const SENTIMENT_PALETTE = [
-  "#3B82F6",
-  "#10B981",
-  "#F97316",
-  "#EF4444",
-  "#8B5CF6",
-  "#14B8A6",
-  "#EC4899",
+const SENTIMENT_COLORS = [
   "#6366F1",
+  "#8B5CF6",
+  "#EC4899",
+  "#F59E0B",
+  "#10B981",
+  "#3B82F6",
+  "#14B8A6",
+  "#F97316",
 ];
 
 function Dashboard() {
   const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [selectedConversation, setSelectedConversation] = useState(null);
   const [timeframe, setTimeframe] = useState("30d");
+  const [appliedRangeLabel, setAppliedRangeLabel] = useState("Last 30 days");
   const [customStart, setCustomStart] = useState("");
   const [customEnd, setCustomEnd] = useState("");
-  const [appliedRangeLabel, setAppliedRangeLabel] = useState("Last 30 days");
+  const [errorMsg, setErrorMsg] = useState("");
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    applyPresetRange(timeframe);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [timeframe]);
+  useEffect(() => handlePreset(timeframe), [timeframe]);
 
-  const formatDate = (date) => date.toISOString().split("T")[0];
+  // Utils
+  const toISODate = (d) => d.toISOString().split("T")[0];
 
-  const applyPresetRange = (preset) => {
+  const handlePreset = (range) => {
+    if (range === "custom") return;
+
     const now = new Date();
-    let start = null;
-    let end = null;
-    let label = "All time";
+    const presets = {
+      "7d": { start: toISODate(new Date(now - 6 * 86400000)), label: "Last 7 days" },
+      "30d": { start: toISODate(new Date(now - 29 * 86400000)), label: "Last 30 days" },
+      all: { start: null, label: "All time" },
+    };
 
-    switch (preset) {
-      case "7d":
-        start = formatDate(new Date(now.getTime() - 6 * 24 * 60 * 60 * 1000));
-        label = "Last 7 days";
-        break;
-      case "30d":
-        start = formatDate(new Date(now.getTime() - 29 * 24 * 60 * 60 * 1000));
-        label = "Last 30 days";
-        break;
-      case "custom":
-        // For custom we wait for user to click apply
-        return;
-      default:
-        start = null;
-        end = null;
-        label = "All time";
-    }
-
-    fetchAnalytics({ start_date: start, end_date: end, label });
+    const selected = presets[range] || presets["all"];
+    fetchData({ start_date: selected.start, label: selected.label });
   };
 
-  const fetchAnalytics = async ({ start_date = null, end_date = null, label = "All time" } = {}) => {
+  const fetchData = async ({ start_date = null, end_date = null, label = "All Time" }) => {
     try {
       setLoading(true);
-      setError("");
-      const params = {};
-      if (start_date) params.start_date = start_date;
-      if (end_date) params.end_date = end_date;
-      const response = await axios.get(`${BACKEND_URL}/analytics/summary`, { params });
+      setErrorMsg("");
+
+      const response = await axios.get(`${BACKEND_URL}/analytics/summary`, {
+        params: { ...(start_date && { start_date }), ...(end_date && { end_date }) },
+      });
+
       setData(response.data);
       setAppliedRangeLabel(label);
-    } catch (err) {
-      console.error("Error fetching analytics:", err);
-      setError(err.response?.data?.detail || "Failed to load analytics");
+    } catch (error) {
+      setErrorMsg(error?.response?.data?.detail || "Failed to load analytics");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleApplyCustomRange = () => {
-    if (!customStart || !customEnd) {
-      setError("Please select both start and end dates for the custom range.");
-      return;
-    }
-    if (new Date(customStart) > new Date(customEnd)) {
-      setError("Start date must be before end date.");
-      return;
-    }
-    fetchAnalytics({
+  const handleCustomApply = () => {
+    if (!customStart || !customEnd) return setErrorMsg("Both dates required");
+    if (new Date(customStart) > new Date(customEnd))
+      return setErrorMsg("Invalid range");
+
+    fetchData({
       start_date: customStart,
       end_date: customEnd,
       label: `Custom: ${customStart} → ${customEnd}`,
     });
   };
 
-  const getRatingCategory = (score) => {
-    if (score >= 9) return "High";
-    if (score >= 7) return "Medium";
-    return "Low";
-  };
+  // Chart Data Transformers
+  const ratingCategory = (score) => (score >= 9 ? "High" : score >= 7 ? "Medium" : "Low");
 
-  const prepareRatingData = () => {
-    if (!data?.conversations) return [];
-    const categories = { High: 0, Medium: 0, Low: 0 };
-    data.conversations.forEach((conv) => {
-      const category = getRatingCategory(conv.score || 0);
-      categories[category]++;
-    });
-    return Object.entries(categories).map(([name, value]) => ({ name, value }));
-  };
-
-  const prepareSentimentData = () => {
-    if (!data?.summary?.sentiment_breakdown) return [];
-    return Object.entries(data.summary.sentiment_breakdown).map(([name, value]) => ({
-      name,
-      value,
-    }));
-  };
-
-  const prepareScoreTrend = () => {
-    if (!data?.conversations) return [];
-    return data.conversations
-      .filter((c) => c.saved_at)
-      .sort((a, b) => new Date(a.saved_at) - new Date(b.saved_at))
-      .map((conv, index) => ({
-        date: new Date(conv.saved_at).toLocaleDateString(),
-        score: conv.score || 0,
-        index: index + 1,
-      }));
-  };
-
-  const prepareTopFeedback = () => {
-    if (!data?.top_feedback) return [];
-    return data.top_feedback.slice(0, 10).map((item) => ({
-      name: item.text.length > 30 ? item.text.substring(0, 30) + "..." : item.text,
-      count: item.count,
-      fullText: item.text,
-    }));
-  };
-
-  const prepareTurnsDistribution = () => {
-    if (!data?.conversations) return [];
-    const distribution = {};
-    data.conversations.forEach((conv) => {
-      const turns = conv.total_turns || 0;
-      distribution[turns] = (distribution[turns] || 0) + 1;
-    });
-    return Object.entries(distribution)
-      .map(([turns, count]) => ({
-        turns: Number(turns),
-        label: `${turns} turn${turns === "1" ? "" : "s"}`,
-        count,
+  const ratingData = data?.conversations
+    ? ["High", "Medium", "Low"].map((cat) => ({
+        name: cat,
+        value: data.conversations.filter((c) => ratingCategory(c.score) === cat).length,
       }))
-      .sort((a, b) => a.turns - b.turns);
-  };
+    : [];
 
-  if (loading) {
+  const sentimentData = data?.summary?.sentiment_breakdown
+    ? Object.entries(data.summary.sentiment_breakdown).map(([name, value]) => ({ name, value }))
+    : [];
+
+  const trendData = data?.conversations
+    ? data.conversations
+        .filter((c) => c.saved_at)
+        .sort((a, b) => new Date(a.saved_at) - new Date(b.saved_at))
+        .map((c) => ({
+          date: new Date(c.saved_at).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+          score: c.score || 0,
+        }))
+    : [];
+
+  const topFeedback = data?.top_feedback
+    ? data.top_feedback.slice(0, 8).map((i) => ({
+        name: i.text.length > 40 ? i.text.slice(0, 40) + "..." : i.text,
+        count: i.count,
+        full: i.text,
+      }))
+    : [];
+
+  const turnsData = data?.conversations
+    ? Object.entries(
+        data.conversations.reduce((acc, c) => {
+          const t = c.total_turns || 0;
+          acc[t] = (acc[t] || 0) + 1;
+          return acc;
+        }, {})
+      )
+        .map(([turns, count]) => ({
+          turns: Number(turns),
+          label: `${turns} turn${turns > 1 ? "s" : ""}`,
+          count,
+        }))
+        .sort((a, b) => a.turns - b.turns)
+    : [];
+
+  // UI States
+  if (loading)
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 text-lg">Loading analytics...</p>
-        </div>
-      </div>
+      <LoadingScreen text="Loading analytics dashboard..." sub="Gathering insights" />
     );
-  }
 
-  if (error) {
+  if (errorMsg)
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
-        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md">
-          <div className="text-red-600 text-6xl mb-4 text-center">⚠️</div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">Error Loading Dashboard</h2>
-          <p className="text-gray-600 mb-4 text-center">{error}</p>
-          <button
-            onClick={fetchAnalytics}
-            className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-          >
-            Retry
-          </button>
-        </div>
-      </div>
+      <ErrorScreen
+        msg={errorMsg}
+        onRetry={() => fetchData({})}
+      />
     );
-  }
 
-  if (!data) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-gray-600 text-lg">No data available</p>
-        </div>
-      </div>
-    );
-  }
+  if (!data)
+    return <EmptyScreen />;
 
-  const summary = data.summary || {};
-  const ratingData = prepareRatingData();
-  const sentimentData = prepareSentimentData();
-  const scoreTrend = prepareScoreTrend();
-  const topFeedback = prepareTopFeedback();
-  const turnsDistribution = prepareTurnsDistribution();
+  const summary = data.summary;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-8 px-4">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8 animate-fade-in">
-          <div className="flex flex-col gap-4">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <div>
-                <h1 className="text-4xl font-bold text-gray-900 mb-2 animate-slide-in-right">📊 Analytics Dashboard</h1>
-                <p className="text-gray-600 animate-slide-in-right animate-delay-100">
-                  Customer feedback insights and trends
-                  <span className="ml-2 text-sm text-gray-500">({appliedRangeLabel})</span>
-                </p>
-              </div>
-              <div className="flex flex-wrap items-center gap-3">
-                <select
-                  value={timeframe}
-                  onChange={(e) => setTimeframe(e.target.value)}
-                  className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="30d">Last 30 days</option>
-                  <option value="7d">Last 7 days</option>
-                  <option value="all">All time</option>
-                  <option value="custom">Custom range</option>
-                </select>
+    <div className="min-h-screen w-full bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      
+      {/* Header */}
+      <Header appliedLabel={appliedRangeLabel} timeframe={timeframe} setTimeframe={setTimeframe} />
 
-                {timeframe !== "custom" && (
-                  <button
-                    onClick={() => applyPresetRange(timeframe)}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm flex items-center gap-2"
-                  >
-                    <span>🔄</span>
-                    Refresh
-                  </button>
-                )}
-              </div>
-            </div>
+      {/* Custom Range */}
+      {timeframe === "custom" && (
+        <CustomRange
+          start={customStart}
+          end={customEnd}
+          setStart={setCustomStart}
+          setEnd={setCustomEnd}
+          onApply={handleCustomApply}
+        />
+      )}
 
-            {timeframe === "custom" && (
-              <div className="bg-white rounded-xl shadow p-4 flex flex-col md:flex-row md:items-end gap-4">
-                <div className="flex-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Start date</label>
-                  <input
-                    type="date"
-                    value={customStart}
-                    onChange={(e) => setCustomStart(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-                <div className="flex-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">End date</label>
-                  <input
-                    type="date"
-                    value={customEnd}
-                    max={new Date().toISOString().split("T")[0]}
-                    onChange={(e) => setCustomEnd(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-                <div className="flex gap-3">
-                  <button
-                    onClick={handleApplyCustomRange}
-                    className="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm"
-                  >
-                    Apply
-                  </button>
-                  <button
-                    onClick={() => {
-                      setCustomStart("");
-                      setCustomEnd("");
-                      setTimeframe("30d");
-                    }}
-                    className="px-5 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition text-sm"
-                  >
-                    Reset
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
+      {/* Dashboard */}
+      <main className="px-4 sm:px-6 lg:px-8 xl:px-12 py-12 space-y-16">
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <StatCard label="Total Conversations" value={summary.total_conversations} icon="💬" />
+          <StatCard
+            label="Average Rating"
+            value={summary.avg_score?.toFixed(1) || "N/A"}
+            icon="⭐"
+            trend={summary.avg_score >= 7 ? "up" : "down"}
+          />
+          <StatCard label="Follow-ups Needed" value={`${summary.followup_required_pct}%`} icon="🔄" />
+          <StatCard label="Avg Turns" value={summary.avg_turns?.toFixed(1)} icon="📈" />
         </div>
 
-        {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-blue-500 hover-lift animate-fade-in animate-delay-100">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-600 text-sm font-medium">Total Conversations</p>
-                <p className="text-3xl font-bold text-gray-900 mt-2 transition-smooth">
-                  {summary.total_conversations ??
-                    summary.conversations ??
-                    0}
-                </p>
-              </div>
-              <div className="text-4xl animate-pulse-slow">💬</div>
-            </div>
-          </div>
+        <ChartRow>
+          <PieSection title="Rating Distribution" data={ratingData} colors={RATING_COLORS} />
+          <PieSection title="Sentiment Breakdown" data={sentimentData} colors={SENTIMENT_COLORS} />
+        </ChartRow>
 
-          <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-green-500 hover-lift animate-fade-in animate-delay-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-600 text-sm font-medium">Average Rating</p>
-                <p className="text-3xl font-bold text-gray-900 mt-2 transition-smooth">{summary.avg_score || "N/A"}</p>
-                {summary.median_score && (
-                  <p className="text-xs text-gray-500 mt-1">Median: {summary.median_score}</p>
-                )}
-              </div>
-              <div className="text-4xl animate-pulse-slow">⭐</div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-yellow-500 hover-lift animate-fade-in animate-delay-300">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-600 text-sm font-medium">Follow-up Required</p>
-                <p className="text-3xl font-bold text-gray-900 mt-2 transition-smooth">{summary.followup_required_pct || 0}%</p>
-              </div>
-              <div className="text-4xl animate-pulse-slow">🔄</div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-purple-500 hover-lift animate-fade-in animate-delay-400">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-600 text-sm font-medium">Avg Conversation Turns</p>
-                <p className="text-3xl font-bold text-gray-900 mt-2 transition-smooth">{summary.avg_turns || 0}</p>
-                {summary.max_turns && (
-                  <p className="text-xs text-gray-500 mt-1">Max: {summary.max_turns}</p>
-                )}
-              </div>
-              <div className="text-4xl animate-pulse-slow">📈</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Charts Row 1 */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          {/* Rating Distribution */}
-          <div className="bg-white rounded-xl shadow-lg p-6 hover-lift animate-scale-in animate-delay-200">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Rating Distribution</h2>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={ratingData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                  outerRadius={100}
-                  fill="#8884d8"
-                  dataKey="value"
-                  animationBegin={0}
-                  animationDuration={800}
-                  animationEasing="ease-out"
-                >
-                  {ratingData.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={RATING_CATEGORY_COLORS[entry.name.toLowerCase()] || "#94A3B8"}
-                    />
-                  ))}
-                </Pie>
-                <Tooltip animationDuration={200} />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-
-          {/* Sentiment Breakdown */}
-          <div className="bg-white rounded-xl shadow-lg p-6 hover-lift animate-scale-in animate-delay-300">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Sentiment Analysis</h2>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={sentimentData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                  outerRadius={100}
-                  fill="#8884d8"
-                  dataKey="value"
-                  animationBegin={100}
-                  animationDuration={800}
-                  animationEasing="ease-out"
-                >
-                  {sentimentData.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={SENTIMENT_PALETTE[index % SENTIMENT_PALETTE.length]}
-                    />
-                  ))}
-                </Pie>
-                <Tooltip animationDuration={200} />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Charts Row 2 */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          {/* Score Trend */}
-          <div className="bg-white rounded-xl shadow-lg p-6 hover-lift animate-scale-in animate-delay-400">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Rating Trend</h2>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={scoreTrend}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis domain={[0, 10]} />
-                <Tooltip animationDuration={200} />
-                <Legend />
-                <Line
-                  type="monotone"
-                  dataKey="score"
-                  stroke="#3B82F6"
-                  strokeWidth={2}
-                  name="Rating"
-                  animationBegin={0}
-                  animationDuration={1000}
-                  animationEasing="ease-out"
-                  dot={{ fill: "#3B82F6", r: 4 }}
-                  activeDot={{ r: 6 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-
-          {/* Top Feedback Themes */}
-          <div className="bg-white rounded-xl shadow-lg p-6 hover-lift animate-scale-in animate-delay-500">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Top Feedback Themes</h2>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={topFeedback} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis type="number" />
-                <YAxis dataKey="name" type="category" width={150} />
-                <Tooltip animationDuration={200} />
-                <Bar 
-                  dataKey="count" 
-                  fill="#8B5CF6"
-                  animationBegin={200}
-                  animationDuration={1000}
-                  animationEasing="ease-out"
-                  radius={[0, 8, 8, 0]}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Conversation Turns Distribution */}
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-6 hover-lift animate-scale-in animate-delay-600">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Conversation Depth Distribution</h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={turnsDistribution}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="label" />
-              <YAxis />
-              <Tooltip animationDuration={200} />
-              <Bar 
-                dataKey="count" 
-                fill="#10B981"
-                animationBegin={300}
-                animationDuration={1000}
-                animationEasing="ease-out"
-                radius={[8, 8, 0, 0]}
-              />
-            </BarChart>
+        <FullChart title="Rating Trend">
+          <ResponsiveContainer width="100%" height={400}>
+            <AreaChart data={trendData}>
+              <defs>
+                <linearGradient id="lineColor" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#6366F1" stopOpacity={0.8} />
+                  <stop offset="95%" stopColor="#6366F1" stopOpacity={0.1} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="#4B5563" />
+              <XAxis dataKey="date" stroke="#9CA3AF" />
+              <YAxis domain={[0, 10]} stroke="#9CA3AF" />
+              <Tooltip contentStyle={ttStyle} />
+              <Area dataKey="score" stroke="#6366F1" fill="url(#lineColor)" />
+            </AreaChart>
           </ResponsiveContainer>
-        </div>
+        </FullChart>
 
-        {/* Conversations Table */}
-        <div className="bg-white rounded-xl shadow-lg p-6 animate-fade-in-up animate-delay-500">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Recent Conversations</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Date</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Score</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Sentiment</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Turns</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Initial Feedback</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.conversations?.slice(0, 20).map((conv, idx) => (
-                  <tr
-                    key={idx}
-                    className="border-b border-gray-100 hover:bg-gray-50 transition-smooth animate-slide-in-right"
-                    style={{ animationDelay: `${idx * 0.05}s` }}
-                  >
-                    <td className="py-3 px-4 text-sm text-gray-600">
-                      {conv.saved_at
-                        ? new Date(conv.saved_at).toLocaleDateString()
-                        : "N/A"}
-                    </td>
-                    <td className="py-3 px-4">
-                      <span
-                        className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                          conv.score >= 9
-                            ? "bg-green-100 text-green-800"
-                            : conv.score >= 7
-                            ? "bg-yellow-100 text-yellow-800"
-                            : "bg-red-100 text-red-800"
-                        }`}
-                      >
-                        {conv.score || "N/A"}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4">
-                      <span
-                        className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                          conv.sentiment?.toLowerCase().includes("positive")
-                            ? "bg-green-100 text-green-800"
-                            : conv.sentiment?.toLowerCase().includes("negative")
-                            ? "bg-red-100 text-red-800"
-                            : "bg-gray-100 text-gray-800"
-                        }`}
-                      >
-                        {conv.sentiment || "Unknown"}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 text-sm text-gray-600">{conv.total_turns || 0}</td>
-                    <td className="py-3 px-4 text-sm text-gray-600 max-w-xs truncate">
-                      {conv.initial_transcription || "N/A"}
-                    </td>
-                    <td className="py-3 px-4">
-                      <button
-                        onClick={() => setSelectedConversation(conv)}
-                        className="px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition text-sm"
-                      >
-                        View
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* Conversation Detail Modal */}
-        {selectedConversation && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fade-in">
-            <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto animate-scale-in">
-              <div className="sticky top-0 bg-white border-b border-gray-200 p-6 flex items-center justify-between">
-                <h3 className="text-2xl font-bold text-gray-900">Conversation Details</h3>
-                <button
-                  onClick={() => setSelectedConversation(null)}
-                  className="text-gray-500 hover:text-gray-700 text-2xl"
-                >
-                  ×
-                </button>
-              </div>
-              <div className="p-6 space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-gray-600">Score</p>
-                    <p className="text-lg font-semibold">{selectedConversation.score || "N/A"}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Sentiment</p>
-                    <p className="text-lg font-semibold">{selectedConversation.sentiment || "Unknown"}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Total Turns</p>
-                    <p className="text-lg font-semibold">{selectedConversation.total_turns || 0}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Date</p>
-                    <p className="text-lg font-semibold">
-                      {selectedConversation.saved_at
-                        ? new Date(selectedConversation.saved_at).toLocaleString()
-                        : "N/A"}
-                    </p>
-                  </div>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600 mb-2">Initial Transcription</p>
-                  <p className="text-gray-800 bg-gray-50 p-3 rounded">
-                    {selectedConversation.initial_transcription || "N/A"}
-                  </p>
-                </div>
-                {selectedConversation.initial_feedback_points?.length > 0 && (
-                  <div>
-                    <p className="text-sm text-gray-600 mb-2">Key Feedback Points</p>
-                    <ul className="list-disc list-inside space-y-1">
-                      {selectedConversation.initial_feedback_points.map((point, i) => (
-                        <li key={i} className="text-gray-800">
-                          {point}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                {selectedConversation.final_transcription && (
-                  <div>
-                    <p className="text-sm text-gray-600 mb-2">Final Transcription</p>
-                    <p className="text-gray-800 bg-gray-50 p-3 rounded">
-                      {selectedConversation.final_transcription}
-                    </p>
-                  </div>
-                )}
-                {selectedConversation.final_response && (
-                  <div>
-                    <p className="text-sm text-gray-600 mb-2">AI Final Response</p>
-                    <p className="text-gray-800 bg-blue-50 p-3 rounded">
-                      {selectedConversation.final_response}
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
+        <ChartRow>
+          <BarSection title="Top Feedback" data={topFeedback} dataKey="count" nameKey="name" />
+          <BarSection title="Turns Distribution" data={turnsData} dataKey="count" nameKey="label" />
+        </ChartRow>
+      </main>
     </div>
   );
 }
 
-export default Dashboard;
+/* ---------- COMPONENTS ---------- */
 
+const ttStyle = {
+  backgroundColor: "rgba(0,0,0,0.8)",
+  border: "none",
+  borderRadius: "8px",
+  color: "#fff",
+};
+
+// Header
+function Header({ appliedLabel, timeframe, setTimeframe }) {
+  const presets = [
+    { key: "7d", label: "7 Days" },
+    { key: "30d", label: "30 Days" },
+    { key: "all", label: "All Time" },
+    { key: "custom", label: "Custom" },
+  ];
+
+  return (
+    <header className="sticky top-0 z-50 bg-black/20 backdrop-blur-sm border-b border-white/10">
+      <div className="px-4 sm:px-6 lg:px-8 xl:px-12 py-8 flex flex-col md:flex-row justify-between gap-6">
+        <div>
+          <h1 className="text-4xl font-bold text-white mb-2">Analytics Dashboard</h1>
+          <div className="flex items-center gap-2 text-purple-300 text-sm">
+            <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+            {appliedLabel}
+          </div>
+        </div>
+
+        <div className="flex flex-wrap gap-3">
+          {presets.map((p) => (
+            <button
+              key={p.key}
+              onClick={() => setTimeframe(p.key)}
+              className={`px-4 py-2 rounded-lg font-medium transition ${
+                timeframe === p.key
+                  ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg"
+                  : "bg-white/10 text-gray-300 hover:bg-white/20"
+              }`}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+      </div>
+    </header>
+  );
+}
+
+// Custom range section
+function CustomRange({ start, end, setStart, setEnd, onApply }) {
+  return (
+    <section className="px-4 sm:px-6 lg:px-8 xl:px-12 py-10">
+      <div className="bg-white/10 p-8 border border-white/20 rounded-2xl">
+        <h3 className="text-white font-semibold mb-4">Select Date Range</h3>
+        <div className="flex flex-col sm:flex-row gap-4">
+          <InputDate label="Start" value={start} onChange={setStart} />
+          <InputDate label="End" value={end} onChange={setEnd} />
+          <div className="flex items-end">
+            <button
+              onClick={onApply}
+              className="px-6 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg text-white"
+            >
+              Apply
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+const InputDate = ({ label, value, onChange }) => (
+  <div className="flex-1">
+    <label className="text-gray-300 text-sm mb-1 block">{label}</label>
+    <input
+      type="date"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white"
+    />
+  </div>
+);
+
+// Stats
+function StatCard({ label, value, icon }) {
+  return (
+    <div className="bg-white/10 border border-white/20 rounded-2xl p-6 text-white">
+      <div className="text-3xl mb-2">{icon}</div>
+      <h4 className="text-gray-300 text-sm">{label}</h4>
+      <p className="text-2xl font-bold">{value}</p>
+    </div>
+  );
+}
+
+// Layout wrappers
+const ChartRow = ({ children }) => (
+  <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">{children}</div>
+);
+
+const FullChart = ({ title, children }) => (
+  <ChartCard title={title} full>{children}</ChartCard>
+);
+
+function ChartCard({ title, children, full }) {
+  return (
+    <div
+      className={`bg-white/10 border border-white/20 rounded-2xl p-6 ${
+        full ? "" : ""
+      }`}
+    >
+      <h3 className="text-white text-lg font-semibold mb-4">{title}</h3>
+      {children}
+    </div>
+  );
+}
+
+// Chart components
+function PieSection({ title, data, colors }) {
+  return (
+    <ChartCard title={title}>
+      <ResponsiveContainer width="100%" height={320}>
+        <PieChart>
+          <Pie
+            data={data}
+            cx="50%"
+            cy="50%"
+            outerRadius={100}
+            innerRadius={50}
+            label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+            dataKey="value"
+          >
+            {data.map((entry, i) => (
+              <Cell key={i} fill={colors[entry.name] || colors[i % colors.length]} />
+            ))}
+          </Pie>
+          <Tooltip contentStyle={ttStyle} />
+        </PieChart>
+      </ResponsiveContainer>
+    </ChartCard>
+  );
+}
+
+function BarSection({ title, data, dataKey, nameKey }) {
+  return (
+    <ChartCard title={title}>
+      <ResponsiveContainer width="100%" height={400}>
+        <BarChart layout="vertical" data={data}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#4B5563" />
+          <XAxis type="number" stroke="#9CA3AF" />
+          <YAxis dataKey={nameKey} type="category" width={140} stroke="#9CA3AF" />
+          <Tooltip contentStyle={ttStyle} />
+          <Bar dataKey={dataKey} fill="#8B5CF6" />
+        </BarChart>
+      </ResponsiveContainer>
+    </ChartCard>
+  );
+}
+
+/* Loading / Error / Empty screens */
+const LoadingScreen = ({ text, sub }) => (
+  <Screen>
+    <div className="relative">
+      <Spinner />
+    </div>
+    <p className="text-white text-xl">{text}</p>
+    <p className="text-purple-300 text-sm">{sub}</p>
+  </Screen>
+);
+
+const ErrorScreen = ({ msg, onRetry }) => (
+  <Screen>
+    <h2 className="text-red-400 text-2xl font-bold mb-2">Error</h2>
+    <p className="text-gray-300 mb-4">{msg}</p>
+    <button
+      onClick={onRetry}
+      className="px-6 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg"
+    >
+      Retry
+    </button>
+  </Screen>
+);
+
+const EmptyScreen = () => (
+  <Screen>
+    <p className="text-gray-300 text-lg">No Data Available</p>
+  </Screen>
+);
+
+const Screen = ({ children }) => (
+  <div className="w-full h-screen flex flex-col items-center justify-center text-center">
+    {children}
+  </div>
+);
+
+const Spinner = () => (
+  <div className="w-20 h-20 mx-auto mb-6 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin" />
+);
+
+export default Dashboard;
