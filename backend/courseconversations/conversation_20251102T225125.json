@@ -1,0 +1,22 @@
+{
+  "score": 7,
+  "sentiment": "Neutral",
+  "initial_transcription": "The course was okay. It covered the basics but nothing exceptional.",
+  "initial_feedback_points": [
+    "Average quality",
+    "Acceptable delivery"
+  ],
+  "turns": [],
+  "final_analysis": {
+    "transcription": "The course was okay. It covered the basics but nothing exceptional.",
+    "conversationalResponse": "Thank you for your feedback! We appreciate you taking the time to share your experience with our course.",
+    "requiresFollowUp": false,
+    "conversationComplete": true,
+    "sentiment": "Neutral"
+  },
+  "metadata": {
+    "total_turns": 0,
+    "completed_at": "2025-11-02T22:51:25.537506+00:00Z"
+  },
+  "saved_at": "2025-11-02T22:51:25.537506+00:00Z"
+}

@@ -1,0 +1,29 @@
+{
+  "score": 6,
+  "sentiment": "Frustrated",
+  "initial_transcription": "Very disappointed with the course quality. The instructor seemed unprepared.",
+  "initial_feedback_points": [
+    "Lack of support",
+    "Poor quality",
+    "Misleading description",
+    "Waste of time"
+  ],
+  "turns": [
+    {
+      "user": "I'm angry that the course description didn't match the actual content.",
+      "ai": "Thank you for that additional feedback. We understand your concerns and will work on improving this."
+    }
+  ],
+  "final_analysis": {
+    "transcription": "I'm angry that the course description didn't match the actual content.",
+    "conversationalResponse": "We'd love to hear more about your experience. Could you tell us what specific aspects you'd like to see improved?",
+    "requiresFollowUp": true,
+    "conversationComplete": false,
+    "sentiment": "Frustrated"
+  },
+  "metadata": {
+    "total_turns": 1,
+    "completed_at": "2025-10-31T13:53:25.536275+00:00Z"
+  },
+  "saved_at": "2025-10-31T13:53:25.536275+00:00Z"
+}

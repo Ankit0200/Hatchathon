@@ -1,0 +1,36 @@
+{
+  "score": 6,
+  "sentiment": "Disappointed",
+  "initial_transcription": "Too much theory, not enough practical application.",
+  "initial_feedback_points": [
+    "Too basic",
+    "Not enough practice",
+    "Too much theory"
+  ],
+  "turns": [
+    {
+      "user": "Not enough practice exercises. I needed more hands-on experience.",
+      "ai": "Thank you for that additional feedback. We understand your concerns and will work on improving this."
+    },
+    {
+      "user": "The course structure was confusing. Topics were not organized well.",
+      "ai": "Thank you for that additional feedback. We understand your concerns and will work on improving this."
+    },
+    {
+      "user": "The course didn't meet my expectations. Content was shallow.",
+      "ai": "Thank you for that additional feedback. We understand your concerns and will work on improving this."
+    }
+  ],
+  "final_analysis": {
+    "transcription": "The course didn't meet my expectations. Content was shallow.",
+    "conversationalResponse": "Thank you for your feedback! We appreciate you taking the time to share your experience with our course.",
+    "requiresFollowUp": false,
+    "conversationComplete": true,
+    "sentiment": "Disappointed"
+  },
+  "metadata": {
+    "total_turns": 3,
+    "completed_at": "2025-11-13T00:10:25.535148+00:00Z"
+  },
+  "saved_at": "2025-11-13T00:10:25.535148+00:00Z"
+}

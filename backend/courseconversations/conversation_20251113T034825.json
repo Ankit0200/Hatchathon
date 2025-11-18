@@ -1,0 +1,24 @@
+{
+  "score": 8,
+  "sentiment": "Neutral",
+  "initial_transcription": "The course was satisfactory. Nothing special but it served its purpose.",
+  "initial_feedback_points": [
+    "Satisfactory",
+    "Acceptable delivery",
+    "Standard course",
+    "Room for improvement"
+  ],
+  "turns": [],
+  "final_analysis": {
+    "transcription": "The course was satisfactory. Nothing special but it served its purpose.",
+    "conversationalResponse": "Thank you for your feedback! We appreciate you taking the time to share your experience with our course.",
+    "requiresFollowUp": false,
+    "conversationComplete": true,
+    "sentiment": "Neutral"
+  },
+  "metadata": {
+    "total_turns": 0,
+    "completed_at": "2025-11-13T03:48:25.537018+00:00Z"
+  },
+  "saved_at": "2025-11-13T03:48:25.537018+00:00Z"
+}

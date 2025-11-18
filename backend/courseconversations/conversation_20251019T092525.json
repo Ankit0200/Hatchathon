@@ -1,0 +1,29 @@
+{
+  "score": 5,
+  "sentiment": "Disappointed",
+  "initial_transcription": "The course material was outdated. Some examples didn't work with current versions.",
+  "initial_feedback_points": [
+    "Confusing structure",
+    "Too basic",
+    "Too much theory",
+    "Poor video quality"
+  ],
+  "turns": [
+    {
+      "user": "The course didn't meet my expectations. Content was shallow.",
+      "ai": "Thank you for that additional feedback. We understand your concerns and will work on improving this."
+    }
+  ],
+  "final_analysis": {
+    "transcription": "The course didn't meet my expectations. Content was shallow.",
+    "conversationalResponse": "We'd love to hear more about your experience. Could you tell us what specific aspects you'd like to see improved?",
+    "requiresFollowUp": true,
+    "conversationComplete": false,
+    "sentiment": "Disappointed"
+  },
+  "metadata": {
+    "total_turns": 1,
+    "completed_at": "2025-10-19T09:25:25.535677+00:00Z"
+  },
+  "saved_at": "2025-10-19T09:25:25.535677+00:00Z"
+}

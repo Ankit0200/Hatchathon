@@ -1,7 +1,7 @@
 import "./Body.css";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faMicrophone, faArrowRight, faStar, faChartBar, faComments, faChartLine, faClock, faShield, faUsers, faBrain, faCheckCircle, faGlobe, faRocket, faBuilding, faHospital, faStore, faUtensils } from "@fortawesome/free-solid-svg-icons";
+import { faMicrophone, faArrowRight, faStar, faChartBar, faComments, faChartLine, faClock, faShield, faUsers, faBrain, faCheckCircle, faGlobe, faRocket, faBuilding, faHospital, faStore, faUtensils, faCrown, faMedal, faGift, faEnvelope, faPhone, faMapMarkerAlt } from "@fortawesome/free-solid-svg-icons";
 
 export default function Body(){
     const navigate = useNavigate();
@@ -17,42 +17,93 @@ export default function Body(){
     };
 
     const features = [
-        { icon: faMicrophone, title: "Natural Conversation", desc: "Speak naturally and let our AI understand your feedback in real-time." },
-        { icon: faChartBar, title: "Real-Time Analysis", desc: "Get instant insights from voice feedback with advanced sentiment analysis." },
-        { icon: faComments, title: "Interactive Experience", desc: "Engage in meaningful conversations with our intelligent assistant." },
-        { icon: faChartLine, title: "Actionable Insights", desc: "Transform voice data into comprehensive reports and visualizations." },
-        { icon: faClock, title: "Quick & Efficient", desc: "Save time with voice feedback that's faster than traditional surveys." },
-        { icon: faShield, title: "Secure & Private", desc: "Your voice data is encrypted and protected with enterprise-grade security." }
+        { icon: faMicrophone, title: "Natural Customer Conversations", desc: "Your customers speak naturally while our AI captures their feedback in real-time." },
+        { icon: faChartBar, title: "Real-Time Analytics Dashboard", desc: "See customer sentiment, top issues, and improvement areas instantly in your dashboard." },
+        { icon: faComments, title: "Deep Customer Insights", desc: "Understand not just what customers say, but why they feel that way through AI-powered analysis." },
+        { icon: faChartLine, title: "Actionable Improvement Plans", desc: "Get specific recommendations on what to fix first based on customer feedback patterns." },
+        { icon: faClock, title: "Higher Response Rates", desc: "Voice feedback is faster and more engaging than surveys, so more customers actually respond." },
+        { icon: faShield, title: "Secure & Private", desc: "All customer feedback is encrypted and protected with enterprise-grade security." }
     ];
 
     const stats = [
-        { value: "3+", label: "Business Categories", icon: faBuilding },
-        { value: "AI-Powered", label: "Voice Analysis", icon: faMicrophone },
-        { value: "Real-Time", label: "Feedback Processing", icon: faClock },
+        { value: "100+", label: "Business Categories", icon: faBuilding },
+        { value: "AI-Powered", label: "Insights Engine", icon: faBrain },
+        { value: "Real-Time", label: "Analytics Dashboard", icon: faChartBar },
         { value: "100%", label: "Free to Use", icon: faStar }
     ];
 
     const testimonials = [
         {
             name: "Sarah Johnson",
-            role: "Product Manager",
+            role: "Business Owner",
             company: "TechCorp",
-            text: "This voice feedback system has revolutionized how we collect customer insights. The AI understands context perfectly!",
+            text: "We finally understand what our customers really think. The actionable insights helped us fix our top 3 pain points in just one week!",
             rating: 5
         },
         {
             name: "Michael Chen",
-            role: "UX Designer",
+            role: "Restaurant Owner",
             company: "DesignStudio",
-            text: "The natural conversation flow makes customers feel heard. It's like talking to a real person who truly listens.",
+            text: "Our customers love the voice feedback - it's so much easier than filling out forms. We get 3x more responses and real insights we can act on.",
             rating: 5
         },
         {
             name: "Emily Rodriguez",
-            role: "Customer Success",
+            role: "E-commerce Founder",
             company: "StartupXYZ",
-            text: "Real-time analysis helps us respond to issues instantly. Our customer satisfaction has improved dramatically.",
+            text: "The dashboard shows us exactly what to improve. We've seen a 40% increase in customer satisfaction since using survAI to gather feedback.",
             rating: 5
+        }
+    ];
+
+    const pricingPlans = [
+        {
+            name: "Free",
+            icon: faGift,
+            price: "$0",
+            users: "Up to 400 users",
+            features: [
+                "Voice & Text Feedback",
+                "Basic Analytics Dashboard",
+                "Sentiment Analysis",
+                "Top Feedback Themes",
+                "Email Support"
+            ],
+            color: "#6366F1",
+            popular: false
+        },
+        {
+            name: "Silver",
+            icon: faMedal,
+            price: "$300",
+            users: "Up to 10,000 users",
+            features: [
+                "Everything in Free",
+                "Advanced Analytics",
+                "Priority Support",
+                "Custom Integrations",
+                "Export Reports",
+                "API Access"
+            ],
+            color: "#8B5CF6",
+            popular: true
+        },
+        {
+            name: "Gold",
+            icon: faCrown,
+            price: "Custom",
+            users: "Up to 10,000,000 users",
+            features: [
+                "Everything in Silver",
+                "Dedicated Account Manager",
+                "White-label Options",
+                "Custom AI Training",
+                "SLA Guarantee",
+                "24/7 Priority Support",
+                "Advanced Security"
+            ],
+            color: "#F59E0B",
+            popular: false
         }
     ];
 
@@ -64,18 +115,18 @@ export default function Body(){
                     <div className="hero-left">
                         <div className="hero-badge">
                             <FontAwesomeIcon icon={faStar} className="sparkle-icon" />
-                            <span>AI-Powered Voice Assistant</span>
+                            <span>AI-Powered Customer Feedback Platform</span>
                         </div>
                         <h1 className="hero-title">
-                            <span className="title-line-1">Transform Customer Feedback with</span>
+                            <span className="title-line-1">Get Real Customer Feedback &</span>
                             <span className="title-line-2">
-                                <span className="word-voice">Voice</span>
-                                <span className="word-intelligence">Intelligence</span>
+                                <span className="word-voice">Actionable</span>
+                                <span className="word-intelligence">Insights</span>
                             </span>
                         </h1>
                         <p className="hero-description">
-                            Experience the future of customer insights through our AI-powered voice assistant. 
-                            Collect, analyze, and understand customer experiences like never before.
+                            Help your customers share honest feedback through natural voice conversations. 
+                            Get AI-powered insights that show you exactly what to improve and how to grow your business.
                         </p>
                         <div className="hero-actions">
                             <button 
@@ -93,6 +144,12 @@ export default function Body(){
                                 <span className="btn-text">Get Started</span>
                                 <div className="btn-shine"></div>
                             </button>
+                            <button 
+                                className="btn-demo-action"
+                                onClick={() => navigate('/shop/login')}
+                            >
+                                <span className="btn-text">Demo</span>
+                            </button>
                         </div>
                         <div className="hero-stats-mini">
                             <div className="stat-mini">
@@ -102,7 +159,7 @@ export default function Body(){
                                 </div>
                                 <div className="stat-mini-content">
                                     <div className="stat-mini-value">
-                                        <span className="stat-number">3</span>
+                                        <span className="stat-number">100</span>
                                         <span className="stat-plus">+</span>
                                     </div>
                                     <div className="stat-mini-label">Categories</div>
@@ -215,8 +272,8 @@ export default function Body(){
             <section id="features" className="features-section">
                 <div className="section-container">
                     <div className="section-header">
-                        <h2 className="section-title">Why Choose Voice Feedback?</h2>
-                        <p className="section-subtitle">Revolutionary features that make feedback collection effortless</p>
+                        <h2 className="section-title">Why Business Owners Choose survAI</h2>
+                        <p className="section-subtitle">Get honest customer feedback and clear insights to improve your business</p>
                     </div>
                     <div className="features-grid">
                         {features.map((feature, index) => (
@@ -236,8 +293,8 @@ export default function Body(){
             <section id="popular-business-categories" className="business-categories-section" style={{ padding: "80px 0", background: "linear-gradient(to bottom, rgba(59, 130, 246, 0.05), transparent)" }}>
                 <div className="section-container">
                     <div className="section-header">
-                        <h2 className="section-title">Popular Business Categories</h2>
-                        <p className="section-subtitle">Select your industry to get tailored feedback responses</p>
+                        <h2 className="section-title">Perfect for Your Business Type</h2>
+                        <p className="section-subtitle">Get industry-specific feedback insights tailored to your business</p>
                     </div>
                     <div className="business-categories-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "30px", marginTop: "50px" }}>
                         {businessCategories.map((category) => (
@@ -288,37 +345,238 @@ export default function Body(){
             <section className="how-it-works-section">
                 <div className="section-container">
                     <div className="section-header">
-                        <h2 className="section-title">How It Works</h2>
-                        <p className="section-subtitle">Get started in three simple steps</p>
+                        <h2 className="section-title">How It Works for Your Business</h2>
+                        <p className="section-subtitle">Start getting actionable customer insights in three simple steps</p>
                     </div>
                     <div className="steps-wrapper">
                         <div className="step-card">
                             <div className="step-number">1</div>
-                            <h3 className="step-title">Start Conversation</h3>
+                            <h3 className="step-title">Your Customers Share Feedback</h3>
                             <p className="step-description">
-                                Click the microphone button and begin speaking. Our AI assistant 
-                                will guide you through the feedback process.
+                                Customers use voice or text to share their experience naturally. 
+                                Our AI guides them through meaningful conversations about your business.
                             </p>
                         </div>
                         <div className="step-card">
                             <div className="step-number">2</div>
-                            <h3 className="step-title">Share Your Experience</h3>
+                            <h3 className="step-title">AI Analyzes & Identifies Issues</h3>
                             <p className="step-description">
-                                Talk naturally about your experience. The assistant understands 
-                                context and asks follow-up questions when needed.
+                                Our AI analyzes sentiment, extracts key feedback points, and identifies 
+                                what customers love and what needs improvement.
                             </p>
                         </div>
                         <div className="step-card">
                             <div className="step-number">3</div>
-                            <h3 className="step-title">Get Insights</h3>
+                            <h3 className="step-title">You Get Actionable Insights</h3>
                             <p className="step-description">
-                                Receive instant analysis and comprehensive reports of your 
-                                feedback, ready for action.
+                                View your dashboard to see top issues, customer sentiment trends, and 
+                                prioritized recommendations on what to improve first.
                             </p>
                         </div>
                     </div>
                 </div>
             </section>
+
+            {/* Pricing Section */}
+            <section id="pricing" className="pricing-section">
+                <div className="section-container">
+                    <div className="section-header">
+                        <h2 className="section-title">Simple, Transparent Pricing</h2>
+                        <p className="section-subtitle">Choose the plan that fits your business needs</p>
+                    </div>
+                    <div className="pricing-grid">
+                        {pricingPlans.map((plan, index) => (
+                            <div 
+                                key={index} 
+                                className={`pricing-card ${plan.popular ? 'popular' : ''}`}
+                                style={{ borderColor: plan.color }}
+                            >
+                                {plan.popular && (
+                                    <div className="popular-badge" style={{ background: plan.color }}>
+                                        Most Popular
+                                    </div>
+                                )}
+                                <div className="pricing-header">
+                                    <div className="pricing-icon-wrapper" style={{ background: `${plan.color}15`, color: plan.color }}>
+                                        <FontAwesomeIcon icon={plan.icon} className="pricing-icon" />
+                                    </div>
+                                    <h3 className="pricing-name">{plan.name}</h3>
+                                    <div className="pricing-price">
+                                        <span className="price-amount">{plan.price}</span>
+                                        {plan.price !== "$0" && <span className="price-period">/month</span>}
+                                    </div>
+                                    <p className="pricing-users">{plan.users}</p>
+                                </div>
+                                <div className="pricing-features">
+                                    <ul className="features-list">
+                                        {plan.features.map((feature, idx) => (
+                                            <li key={idx} className="feature-item">
+                                                <FontAwesomeIcon icon={faCheckCircle} className="check-icon" style={{ color: plan.color }} />
+                                                <span>{feature}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                                <button 
+                                    className="pricing-button"
+                                    style={{ 
+                                        background: plan.color,
+                                        borderColor: plan.color
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.background = 'white';
+                                        e.currentTarget.style.color = plan.color;
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.background = plan.color;
+                                        e.currentTarget.style.color = 'white';
+                                    }}
+                                >
+                                    Get Started
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* About Us Section */}
+            <section id="about" className="about-section">
+                <div className="section-container">
+                    <div className="section-header">
+                        <h2 className="section-title">About survAI</h2>
+                        <p className="section-subtitle">Empowering businesses with AI-powered customer insights</p>
+                    </div>
+                    <div className="about-content">
+                        <div className="about-text">
+                            <p className="about-paragraph">
+                                At survAI, we believe that every customer conversation is an opportunity to improve. 
+                                Our mission is to help business owners understand their customers better through 
+                                natural, voice-powered feedback collection and AI-driven analysis.
+                            </p>
+                            <p className="about-paragraph">
+                                Founded with the vision of making customer feedback accessible and actionable, 
+                                survAI transforms how businesses collect, analyze, and act on customer insights. 
+                                We combine cutting-edge AI technology with intuitive design to deliver 
+                                real-time analytics that drive business growth.
+                            </p>
+                            <div className="about-stats">
+                                <div className="about-stat-item">
+                                    <div className="about-stat-value">100+</div>
+                                    <div className="about-stat-label">Business Categories</div>
+                                </div>
+                                <div className="about-stat-item">
+                                    <div className="about-stat-value">AI-Powered</div>
+                                    <div className="about-stat-label">Insights Engine</div>
+                                </div>
+                                <div className="about-stat-item">
+                                    <div className="about-stat-value">Real-Time</div>
+                                    <div className="about-stat-label">Analytics</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="about-features">
+                            <div className="about-feature-card">
+                                <FontAwesomeIcon icon={faBrain} className="about-feature-icon" />
+                                <h3>AI-Powered Analysis</h3>
+                                <p>Advanced machine learning algorithms understand customer sentiment and extract actionable insights</p>
+                            </div>
+                            <div className="about-feature-card">
+                                <FontAwesomeIcon icon={faChartBar} className="about-feature-icon" />
+                                <h3>Real-Time Dashboard</h3>
+                                <p>Get instant visibility into customer feedback trends and improvement opportunities</p>
+                            </div>
+                            <div className="about-feature-card">
+                                <FontAwesomeIcon icon={faShield} className="about-feature-icon" />
+                                <h3>Secure & Private</h3>
+                                <p>Enterprise-grade security ensures your customer data is always protected</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* Footer Section */}
+            <footer className="footer-section">
+                <div className="footer-container">
+                    <div className="footer-content">
+                        <div className="footer-column">
+                            <div className="footer-logo">
+                                <FontAwesomeIcon icon={faMicrophone} className="footer-logo-icon" />
+                                <span className="footer-logo-text">survAI</span>
+                            </div>
+                            <p className="footer-description">
+                                AI-powered customer feedback platform helping businesses 
+                                understand their customers and grow through actionable insights.
+                            </p>
+                            <div className="footer-social">
+                                <a href="#" className="social-link" aria-label="Facebook">
+                                    <span>f</span>
+                                </a>
+                                <a href="#" className="social-link" aria-label="Twitter">
+                                    <span>𝕏</span>
+                                </a>
+                                <a href="#" className="social-link" aria-label="LinkedIn">
+                                    <span>in</span>
+                                </a>
+                                <a href="#" className="social-link" aria-label="Instagram">
+                                    <span>IG</span>
+                                </a>
+                            </div>
+                        </div>
+                        <div className="footer-column">
+                            <h3 className="footer-heading">Product</h3>
+                            <ul className="footer-links">
+                                <li><a href="#features">Features</a></li>
+                                <li><a href="#pricing">Pricing</a></li>
+                                <li><a href="/dashboard">Dashboard</a></li>
+                                <li><a href="/feedback">Get Feedback</a></li>
+                            </ul>
+                        </div>
+                        <div className="footer-column">
+                            <h3 className="footer-heading">Company</h3>
+                            <ul className="footer-links">
+                                <li><a href="#about">About Us</a></li>
+                                <li><a href="#">Blog</a></li>
+                                <li><a href="#">Careers</a></li>
+                                <li><a href="#">Contact</a></li>
+                            </ul>
+                        </div>
+                        <div className="footer-column">
+                            <h3 className="footer-heading">Support</h3>
+                            <ul className="footer-links">
+                                <li><a href="#">Help Center</a></li>
+                                <li><a href="#">Documentation</a></li>
+                                <li><a href="#">API Docs</a></li>
+                                <li><a href="#">Privacy Policy</a></li>
+                                <li><a href="#">Terms of Service</a></li>
+                            </ul>
+                        </div>
+                        <div className="footer-column">
+                            <h3 className="footer-heading">Contact</h3>
+                            <ul className="footer-contact">
+                                <li>
+                                    <FontAwesomeIcon icon={faEnvelope} className="contact-icon" />
+                                    <span>support@survai.com</span>
+                                </li>
+                                <li>
+                                    <FontAwesomeIcon icon={faPhone} className="contact-icon" />
+                                    <span>+1 (555) 123-4567</span>
+                                </li>
+                                <li>
+                                    <FontAwesomeIcon icon={faMapMarkerAlt} className="contact-icon" />
+                                    <span>123 Business St, City, State 12345</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div className="footer-bottom">
+                        <p className="footer-copyright">
+                            © {new Date().getFullYear()} survAI. All rights reserved.
+                        </p>
+                    </div>
+                </div>
+            </footer>
 
         </div>
     );

@@ -1,0 +1,35 @@
+{
+  "score": 6,
+  "sentiment": "Frustrated",
+  "initial_transcription": "The concepts were pretty hard and I couldn't grasp anything out of it.",
+  "initial_feedback_points": [
+    "Concepts were too difficult",
+    "User was unable to grasp the material"
+  ],
+  "turns": [
+    {
+      "user": "Swimming hola. And the advanced concepts of JavaScript.",
+      "ai": "Thank you for narrowing that down to the advanced concepts in JavaScript. That's very helpful. To make sure we improve the right material, could you tell me one or two specific advanced topics, perhaps something like closures, prototypes, or async/await, that you found most difficult?"
+    },
+    {
+      "user": "No, I am not familiar with those terms. I just don't know the advanced concepts of JavaScript.",
+      "ai": "I understand completely. Since those specific topic names aren't familiar, could you perhaps tell me which specific section of the course you were in, or what you were trying to build (like managing data, handling user input, or working with API calls) when you felt the concepts were too hard?"
+    },
+    {
+      "ai": "Thank you! That is exactly the helpful detail we needed. Knowing that the 'Working with API calls' section was difficult helps us focus our content review specifically on the lessons covering Promises and Async/Await. We appreciate you taking the time to share this feedback.",
+      "user": "Working with API calls"
+    }
+  ],
+  "final_analysis": {
+    "transcription": "Working with API calls",
+    "conversationalResponse": "Thank you! That is exactly the helpful detail we needed. Knowing that the 'Working with API calls' section was difficult helps us focus our content review specifically on the lessons covering Promises and Async/Await. We appreciate you taking the time to share this feedback.",
+    "requiresFollowUp": false,
+    "conversationComplete": true,
+    "score": 6
+  },
+  "metadata": {
+    "total_turns": 3,
+    "completed_at": "2025-11-18T19:35:28.750062Z"
+  },
+  "saved_at": "2025-11-18T19:35:28.750067Z"
+}

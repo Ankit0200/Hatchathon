@@ -21,7 +21,7 @@ export default function Navbar() {
       <div className="nav-cont">
         <div className="logo-container" onClick={() => scrollToSection('hero')}>
           <FontAwesomeIcon icon={faMicrophone} className="microphone-icon" />
-          <span className="logo-text">VoiceAI</span>
+          <span className="logo-text">survAI</span>
         </div>
 
         <div className={`routing-links ${isMenuOpen ? 'active' : ''}`}>

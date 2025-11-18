@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
+import CourseLogin from "./CourseLogin.jsx";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faComments, faStar, faSync, faChartLine, faHome } from "@fortawesome/free-solid-svg-icons";
@@ -23,7 +24,7 @@ import {
   AreaChart,
   Area,
 } from "recharts";
-import "./Dashboard.css";
+import "./CourseDashboard.css";
 
 const BACKEND_URL =
   import.meta.env.VITE_BACKEND_URL || "http://127.0.0.1:8000";
@@ -136,6 +137,30 @@ function Scene3D() {
 }
 
 function Dashboard() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    // Check if user is logged in
+    const loggedIn = localStorage.getItem("courseOwnerLoggedIn") === "true";
+    setIsAuthenticated(loggedIn);
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("courseOwnerLoggedIn");
+    localStorage.removeItem("courseOwnerEmail");
+    setIsAuthenticated(false);
+  };
+
+  // Show login page if not authenticated
+  if (!isAuthenticated) {
+    return <CourseLogin />;
+  }
+
+  // Rest of the dashboard component
+  return <DashboardContent onLogout={handleLogout} />;
+}
+
+function DashboardContent({ onLogout }) {
   const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [topFocusAreas, setTopFocusAreas] = useState(null);
@@ -232,7 +257,7 @@ function Dashboard() {
   const fetchTopFocusAreas = async ({ start_date = null, end_date = null }) => {
     try {
       const response = await axios.get(`${BACKEND_URL}/analytics/top-focus-areas`, {
-        params: { ...(start_date && { start_date }), ...(end_date && { end_date }) },
+        params: { ...(start_date && { start_date }), ...(end_date && { end_date }), conversation_type: "course" },
         timeout: 10000, // Longer timeout for AI processing
       });
       setTopFocusAreas(response.data);
@@ -262,7 +287,7 @@ function Dashboard() {
       setErrorMsg("");
 
       const response = await axios.get(`${BACKEND_URL}/analytics/summary`, {
-        params: { ...(start_date && { start_date }), ...(end_date && { end_date }) },
+        params: { ...(start_date && { start_date }), ...(end_date && { end_date }), conversation_type: "course" },
         timeout: 5000,
       });
 
@@ -432,7 +457,7 @@ function Dashboard() {
       <div className="content-wrapper">
         <div className="content-inner">
           {/* Header */}
-          <Header appliedLabel={appliedRangeLabel} timeframe={timeframe} setTimeframe={setTimeframe} navigate={navigate} />
+          <Header appliedLabel={appliedRangeLabel} timeframe={timeframe} setTimeframe={setTimeframe} navigate={navigate} onLogout={onLogout} />
 
           {/* Custom Range */}
           {timeframe === "custom" && (
@@ -494,6 +519,11 @@ function Dashboard() {
             <BarSection title="Top Feedback" data={topFeedback} dataKey="count" nameKey="name" />
             <BarSection title="Turns Distribution" data={turnsData} dataKey="count" nameKey="label" />
           </div>
+
+          {/* Recent Feedback Section */}
+          {data?.conversations && data.conversations.length > 0 && (
+            <RecentFeedbackSection conversations={data.conversations} />
+          )}
         </div>
         </div>
       </div>
@@ -511,7 +541,7 @@ const ttStyle = {
   fontWeight: "500",
 };
 
-function Header({ appliedLabel, timeframe, setTimeframe, navigate }) {
+function Header({ appliedLabel, timeframe, setTimeframe, navigate, onLogout }) {
   const presets = [
     { key: "7d", label: "7 Days" },
     { key: "30d", label: "30 Days" },
@@ -528,7 +558,10 @@ function Header({ appliedLabel, timeframe, setTimeframe, navigate }) {
               <FontAwesomeIcon icon={faHome} className="home-icon" />
               Home
             </button>
-            <h1 className="dashboard-title">Analytics Dashboard</h1>
+            <h1 className="dashboard-title">Course Feedback Analytics Dashboard</h1>
+            <button onClick={onLogout} className="logout-btn" title="Logout">
+              Logout
+            </button>
           </div>
           <div className="range-label">{appliedLabel.replace("Demo Mode - ", "")}</div>
               </div>
@@ -709,6 +742,94 @@ function TopFocusSection({ focusAreas }) {
             <div className="top-focus-content">
               <h3 className="top-focus-card-title">{area.title}</h3>
               <p className="top-focus-card-explanation">{area.explanation}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function RecentFeedbackSection({ conversations }) {
+  // Sort by saved_at date (most recent first) and take top 10
+  const recentConversations = [...conversations]
+    .sort((a, b) => {
+      const dateA = new Date(a.saved_at || 0);
+      const dateB = new Date(b.saved_at || 0);
+      return dateB - dateA;
+    })
+    .slice(0, 10);
+
+  const getSentimentColor = (sentiment) => {
+    const sentimentLower = (sentiment || "").toLowerCase();
+    if (sentimentLower.includes("positive") || sentimentLower.includes("happy") || sentimentLower.includes("satisfied")) {
+      return "#10B981";
+    } else if (sentimentLower.includes("negative") || sentimentLower.includes("frustrated") || sentimentLower.includes("angry") || sentimentLower.includes("disappointed")) {
+      return "#EF4444";
+    } else if (sentimentLower.includes("neutral")) {
+      return "#6366F1";
+    }
+    return "#64748B";
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString("en-US", { 
+        month: "short", 
+        day: "numeric", 
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+    } catch {
+      return dateString;
+    }
+  };
+
+  const getScoreColor = (score) => {
+    if (score >= 9) return "#10B981";
+    if (score >= 7) return "#6366F1";
+    return "#EF4444";
+  };
+
+  return (
+    <div className="recent-feedback-section">
+      <div className="recent-feedback-header">
+        <h2 className="recent-feedback-title">Recent Feedback</h2>
+        <p className="recent-feedback-subtitle">Latest course feedback submissions</p>
+      </div>
+      <div className="recent-feedback-grid">
+        {recentConversations.map((conversation, index) => (
+          <div key={index} className="recent-feedback-card">
+            <div className="feedback-card-header">
+              <div className="feedback-score-badge" style={{ backgroundColor: getScoreColor(conversation.score) }}>
+                {conversation.score}/10
+              </div>
+              <div className="feedback-sentiment-badge" style={{ color: getSentimentColor(conversation.sentiment) }}>
+                {conversation.sentiment || "Unknown"}
+              </div>
+            </div>
+            <div className="feedback-card-body">
+              <p className="feedback-text">
+                {conversation.initial_transcription || conversation.final_transcription || "No transcription available"}
+              </p>
+              {conversation.initial_feedback_points && conversation.initial_feedback_points.length > 0 && (
+                <div className="feedback-points">
+                  {conversation.initial_feedback_points.slice(0, 3).map((point, idx) => (
+                    <span key={idx} className="feedback-point-tag">
+                      {point}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="feedback-card-footer">
+              <div className="feedback-meta">
+                <span className="feedback-date">{formatDate(conversation.saved_at)}</span>
+                <span className="feedback-turns">{conversation.total_turns || 0} turn{conversation.total_turns !== 1 ? 's' : ''}</span>
+              </div>
             </div>
           </div>
         ))}

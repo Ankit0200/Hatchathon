@@ -1,0 +1,28 @@
+{
+  "score": 9,
+  "sentiment": "Positive",
+  "initial_transcription": "Loved the course! The projects were engaging and practical.",
+  "initial_feedback_points": [
+    "Engaging instructor",
+    "Good examples",
+    "Well-structured content"
+  ],
+  "turns": [
+    {
+      "user": "The course content was excellent and well-structured. I learned a lot about web development fundamentals.",
+      "ai": "Thank you for that additional feedback. We appreciate you taking the time to share more details."
+    }
+  ],
+  "final_analysis": {
+    "transcription": "The course content was excellent and well-structured. I learned a lot about web development fundamentals.",
+    "conversationalResponse": "Thank you for your feedback! We appreciate you taking the time to share your experience with our course.",
+    "requiresFollowUp": false,
+    "conversationComplete": true,
+    "sentiment": "Positive"
+  },
+  "metadata": {
+    "total_turns": 1,
+    "completed_at": "2025-10-21T06:03:25.536771+00:00Z"
+  },
+  "saved_at": "2025-10-21T06:03:25.536771+00:00Z"
+}

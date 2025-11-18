@@ -246,6 +246,30 @@
     50% { transform: scale(1.35); }
 }
 
+.btn-demo-action {
+    padding: 20px 40px;
+    font-size: 1.15rem;
+    font-weight: 600;
+    border-radius: 50px;
+    border: 2px solid rgba(37, 99, 235, 0.3);
+    background: rgba(255, 255, 255, 0.9);
+    color: #2563eb;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 4px 15px rgba(37, 99, 235, 0.15);
+}
+
+.btn-demo-action:hover {
+    transform: translateY(-3px);
+    border-color: rgba(37, 99, 235, 0.5);
+    background: white;
+    box-shadow: 0 8px 25px rgba(37, 99, 235, 0.25);
+    color: #1d4ed8;
+}
+
 .btn-secondary-action {
     padding: 20px 40px;
     font-size: 1.15rem;
@@ -1009,6 +1033,181 @@
     line-height: 1.75;
 }
 
+/* Pricing Section */
+.pricing-section {
+    padding: 120px 20px;
+    background: linear-gradient(180deg, #fefefe 0%, #fafafa 50%, #f5f5f5 100%);
+}
+
+.pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 40px;
+    margin-top: 70px;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.pricing-card {
+    position: relative;
+    background: white;
+    border-radius: 24px;
+    padding: 50px 40px;
+    border: 3px solid #e5e7eb;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08),
+                0 4px 15px rgba(0, 0, 0, 0.05);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+}
+
+.pricing-card:hover {
+    transform: translateY(-12px);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15),
+                0 10px 30px rgba(0, 0, 0, 0.1);
+    border-width: 3px;
+}
+
+.pricing-card.popular {
+    border-width: 3px;
+    box-shadow: 0 12px 40px rgba(139, 92, 246, 0.2),
+                0 6px 20px rgba(139, 92, 246, 0.15);
+}
+
+.pricing-card.popular:hover {
+    box-shadow: 0 25px 60px rgba(139, 92, 246, 0.3),
+                0 12px 35px rgba(139, 92, 246, 0.2);
+}
+
+.popular-badge {
+    position: absolute;
+    top: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 8px 24px;
+    border-radius: 50px;
+    color: white;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.pricing-header {
+    text-align: center;
+    margin-bottom: 40px;
+    padding-bottom: 30px;
+    border-bottom: 2px solid #f1f5f9;
+}
+
+.pricing-icon-wrapper {
+    width: 80px;
+    height: 80px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 24px;
+    transition: transform 0.3s ease;
+}
+
+.pricing-card:hover .pricing-icon-wrapper {
+    transform: scale(1.1) rotate(5deg);
+}
+
+.pricing-icon {
+    font-size: 2.5rem;
+}
+
+.pricing-name {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 20px;
+    letter-spacing: -0.02em;
+}
+
+.pricing-price {
+    margin-bottom: 12px;
+}
+
+.price-amount {
+    font-size: 3.5rem;
+    font-weight: 900;
+    color: #0f172a;
+    letter-spacing: -0.03em;
+}
+
+.price-period {
+    font-size: 1.1rem;
+    color: #64748b;
+    font-weight: 600;
+    margin-left: 8px;
+}
+
+.pricing-users {
+    font-size: 1.1rem;
+    color: #64748b;
+    font-weight: 600;
+    margin-top: 8px;
+}
+
+.pricing-features {
+    flex: 1;
+    margin-bottom: 40px;
+}
+
+.features-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.feature-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 16px 0;
+    font-size: 1.05rem;
+    color: #475569;
+    line-height: 1.6;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.feature-item:last-child {
+    border-bottom: none;
+}
+
+.feature-item .check-icon {
+    font-size: 1.3rem;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+.pricing-button {
+    width: 100%;
+    padding: 18px 32px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: white;
+    border: 3px solid;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    letter-spacing: 0.3px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+.pricing-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+}
+
+.pricing-button:active {
+    transform: translateY(-1px);
+}
+
 /* Testimonials Section - Whitish Blue */
 .testimonials-section {
     padding: 120px 20px;
@@ -1145,12 +1344,21 @@
     }
     
     .features-grid,
-    .testimonials-grid {
+    .testimonials-grid,
+    .pricing-grid {
         grid-template-columns: 1fr;
     }
     
     .steps-wrapper {
         grid-template-columns: 1fr;
+    }
+    
+    .pricing-card {
+        padding: 40px 30px;
+    }
+    
+    .price-amount {
+        font-size: 2.8rem;
     }
 }
 
@@ -1193,5 +1401,302 @@
     
     .section-title {
         font-size: 2rem;
+    }
+    
+    .pricing-card {
+        padding: 35px 25px;
+    }
+    
+    .pricing-name {
+        font-size: 1.6rem;
+    }
+    
+    .price-amount {
+        font-size: 2.4rem;
+    }
+    
+    .pricing-icon-wrapper {
+        width: 70px;
+        height: 70px;
+    }
+    
+    .pricing-icon {
+        font-size: 2rem;
+    }
+}
+
+/* About Us Section */
+.about-section {
+    padding: 120px 20px;
+    background: linear-gradient(180deg, #f0f7ff 0%, #e0f2fe 50%, #dbeafe 100%);
+}
+
+.about-content {
+    max-width: 1200px;
+    margin: 70px auto 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: start;
+}
+
+.about-text {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.about-paragraph {
+    font-size: 1.15rem;
+    line-height: 1.8;
+    color: #475569;
+    text-align: justify;
+}
+
+.about-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+    margin-top: 20px;
+    padding-top: 30px;
+    border-top: 2px solid rgba(37, 99, 235, 0.1);
+}
+
+.about-stat-item {
+    text-align: center;
+}
+
+.about-stat-value {
+    font-size: 2rem;
+    font-weight: 900;
+    color: #2563eb;
+    margin-bottom: 8px;
+}
+
+.about-stat-label {
+    font-size: 0.95rem;
+    color: #64748b;
+    font-weight: 600;
+}
+
+.about-features {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.about-feature-card {
+    background: white;
+    padding: 35px;
+    border-radius: 20px;
+    box-shadow: 0 6px 25px rgba(37, 99, 235, 0.1);
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.about-feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 35px rgba(37, 99, 235, 0.2);
+    border-color: rgba(37, 99, 235, 0.2);
+}
+
+.about-feature-icon {
+    font-size: 2.5rem;
+    color: #2563eb;
+    margin-bottom: 20px;
+}
+
+.about-feature-card h3 {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 12px;
+}
+
+.about-feature-card p {
+    font-size: 1.05rem;
+    color: #64748b;
+    line-height: 1.7;
+}
+
+/* Footer Section */
+.footer-section {
+    background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+    color: #e2e8f0;
+    padding: 80px 20px 30px;
+    margin-top: 0;
+}
+
+.footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.footer-content {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1.5fr;
+    gap: 50px;
+    margin-bottom: 50px;
+}
+
+.footer-column {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.footer-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.footer-logo-icon {
+    font-size: 2rem;
+    color: #3b82f6;
+}
+
+.footer-logo-text {
+    font-size: 1.8rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.footer-description {
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: #94a3b8;
+    margin-bottom: 10px;
+}
+
+.footer-social {
+    display: flex;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.social-link {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #60a5fa;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.social-link:hover {
+    background: rgba(59, 130, 246, 0.2);
+    border-color: rgba(59, 130, 246, 0.4);
+    color: #93c5fd;
+    transform: translateY(-3px);
+}
+
+.footer-heading {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 5px;
+}
+
+.footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.footer-links li a {
+    color: #94a3b8;
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.footer-links li a:hover {
+    color: #60a5fa;
+    transform: translateX(5px);
+}
+
+.footer-contact {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.footer-contact li {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    color: #94a3b8;
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.contact-icon {
+    font-size: 1.1rem;
+    color: #60a5fa;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+.footer-bottom {
+    border-top: 1px solid rgba(148, 163, 184, 0.2);
+    padding-top: 30px;
+    text-align: center;
+}
+
+.footer-copyright {
+    color: #94a3b8;
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+/* Responsive Design for About and Footer */
+@media (max-width: 1024px) {
+    .about-content {
+        grid-template-columns: 1fr;
+        gap: 50px;
+    }
+    
+    .footer-content {
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
+    }
+}
+
+@media (max-width: 768px) {
+    .about-stats {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .footer-content {
+        grid-template-columns: 1fr;
+        gap: 40px;
+    }
+    
+    .about-section {
+        padding: 80px 20px;
+    }
+    
+    .footer-section {
+        padding: 60px 20px 25px;
     }
 }

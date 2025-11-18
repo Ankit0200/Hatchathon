@@ -1,0 +1,148 @@
+/* Course Feedback Popup Styles */
+.course-feedback-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.course-feedback-popup-content {
+  position: relative;
+  width: 100%;
+  max-width: 750px;
+  max-height: 85vh;
+  margin: auto;
+  background: transparent;
+}
+
+.course-feedback-close-btn {
+  position: absolute;
+  top: -50px;
+  right: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: white;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  color: #4a5568;
+}
+
+.course-feedback-close-btn:hover {
+  background: #f7fafc;
+  transform: rotate(90deg);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.course-feedback-popup-inner {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+.course-feedback-popup-inner .content-wrapper {
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+.course-feedback-popup-inner .content-inner {
+  padding: 24px 20px;
+}
+
+/* Make content more compact in popup */
+.course-feedback-popup-inner .header-section {
+  margin-bottom: 24px;
+  padding: 0;
+}
+
+.course-feedback-popup-inner .main-title {
+  font-size: clamp(2rem, 5vw, 2.5rem) !important;
+  margin-bottom: 12px;
+}
+
+.course-feedback-popup-inner .subtitle {
+  font-size: clamp(0.9rem, 1.5vw, 1.1rem) !important;
+  margin-top: 8px;
+}
+
+.course-feedback-popup-inner .main-card {
+  padding: 20px !important;
+  margin-bottom: 0;
+}
+
+.course-feedback-popup-inner .rating-section {
+  margin-bottom: 20px;
+}
+
+.course-feedback-popup-inner .rating-label {
+  font-size: 1rem !important;
+  margin-bottom: 16px;
+}
+
+.course-feedback-popup-inner .rating-buttons-container {
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.course-feedback-popup-inner .rating-button {
+  width: 40px;
+  height: 40px;
+  font-size: 0.9rem;
+}
+
+.course-feedback-popup-inner .ai-response-container {
+  margin-top: 16px !important;
+  margin-bottom: 16px !important;
+  padding: 16px !important;
+}
+
+.course-feedback-popup-inner .ai-response-text {
+  font-size: 0.95rem !important;
+  line-height: 1.6 !important;
+}
+
+.course-feedback-popup-inner .input-section {
+  margin-top: 16px;
+}
+
+.course-feedback-popup-inner .controls-section {
+  margin-top: 16px;
+}
+
+/* Adjust for smaller screens */
+@media (max-width: 768px) {
+  .course-feedback-popup-content {
+    max-width: 100%;
+    margin: 0;
+  }
+  
+  .course-feedback-close-btn {
+    top: 10px;
+    right: 10px;
+    width: 36px;
+    height: 36px;
+  }
+  
+  .course-feedback-popup-inner .content-inner {
+    padding: 32px 20px;
+  }
+}
+

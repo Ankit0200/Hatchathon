@@ -1,0 +1,268 @@
+.course-complete-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 40px 20px;
+}
+
+.completion-hero {
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+  color: white;
+  margin-bottom: 60px;
+}
+
+.certificate-icon {
+  font-size: 5rem;
+  margin-bottom: 24px;
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.completion-hero h1 {
+  font-size: 3rem;
+  font-weight: 800;
+  margin-bottom: 16px;
+}
+
+.completion-message {
+  font-size: 1.25rem;
+  margin-bottom: 40px;
+  opacity: 0.95;
+}
+
+.certificate-preview {
+  margin-top: 40px;
+}
+
+.certificate {
+  background: white;
+  border-radius: 16px;
+  padding: 60px 40px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  color: #1a202c;
+  border: 8px solid #fbbf24;
+  position: relative;
+}
+
+.certificate::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border: 2px solid #667eea;
+  border-radius: 8px;
+  pointer-events: none;
+}
+
+.certificate-header {
+  text-align: center;
+  margin-bottom: 40px;
+  border-bottom: 3px solid #667eea;
+  padding-bottom: 20px;
+}
+
+.certificate-header h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #667eea;
+  margin: 0;
+  letter-spacing: 2px;
+}
+
+.certificate-body {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.certificate-body p {
+  font-size: 1.125rem;
+  color: #4a5568;
+  margin: 12px 0;
+}
+
+.certificate-body h3 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1a202c;
+  margin: 20px 0;
+}
+
+.certificate-body h4 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #667eea;
+  margin: 20px 0;
+}
+
+.certificate-date {
+  margin-top: 30px;
+  font-size: 1rem;
+  color: #718096;
+}
+
+.certificate-footer {
+  display: flex;
+  justify-content: center;
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 2px solid #e2e8f0;
+}
+
+.signature {
+  text-align: center;
+}
+
+.signature-line {
+  width: 200px;
+  height: 2px;
+  background: #1a202c;
+  margin: 0 auto 8px;
+}
+
+.signature p {
+  margin: 4px 0;
+  font-weight: 600;
+  color: #1a202c;
+}
+
+.signature-title {
+  font-size: 0.875rem;
+  color: #718096;
+  font-weight: 400;
+}
+
+.feedback-section {
+  max-width: 1000px;
+  margin: 0 auto 60px;
+  background: white;
+  border-radius: 16px;
+  padding: 40px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  scroll-margin-top: 20px;
+}
+
+.feedback-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.feedback-header h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1a202c;
+  margin-bottom: 12px;
+}
+
+.feedback-header p {
+  font-size: 1.125rem;
+  color: #4a5568;
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+.open-feedback-btn {
+  margin-top: 16px;
+  padding: 14px 32px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.open-feedback-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+}
+
+.next-steps {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 60px 20px;
+  color: white;
+  text-align: center;
+}
+
+.next-steps h3 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 40px;
+}
+
+.next-steps-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 32px;
+}
+
+.next-step-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 32px;
+  text-align: center;
+}
+
+.step-icon {
+  font-size: 3rem;
+  margin-bottom: 16px;
+}
+
+.next-step-card h4 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.next-step-card p {
+  font-size: 1rem;
+  opacity: 0.9;
+  margin-bottom: 24px;
+  line-height: 1.6;
+}
+
+.step-btn {
+  background: white;
+  color: #667eea;
+  border: none;
+  padding: 12px 32px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.step-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+@media (max-width: 768px) {
+  .completion-hero h1 {
+    font-size: 2rem;
+  }
+  
+  .certificate {
+    padding: 40px 24px;
+  }
+  
+  .next-steps-grid {
+    grid-template-columns: 1fr;
+  }
+}
+

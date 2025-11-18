@@ -1,0 +1,22 @@
+{
+  "score": 6,
+  "sentiment": "Negative",
+  "initial_transcription": "Poor video quality made it hard to see the code examples.",
+  "initial_feedback_points": [
+    "Shallow content",
+    "Not enough practice"
+  ],
+  "turns": [],
+  "final_analysis": {
+    "transcription": "Poor video quality made it hard to see the code examples.",
+    "conversationalResponse": "We'd love to hear more about your experience. Could you tell us what specific aspects you'd like to see improved?",
+    "requiresFollowUp": true,
+    "conversationComplete": false,
+    "sentiment": "Negative"
+  },
+  "metadata": {
+    "total_turns": 0,
+    "completed_at": "2025-10-19T01:25:25.536128+00:00Z"
+  },
+  "saved_at": "2025-10-19T01:25:25.536128+00:00Z"
+}

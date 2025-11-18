@@ -1,0 +1,26 @@
+{
+  "score": 7,
+  "sentiment": "Positive",
+  "initial_transcription": "I like the concept. taught in this course.",
+  "initial_feedback_points": [
+    "Likes the course concept"
+  ],
+  "turns": [
+    {
+      "ai": "Thank you very much for clarifying! Poor legibility due to small font is definitely something we need to address. We appreciate you taking the time to share this specific feedback.",
+      "user": "And the font size was very small, so you could improve it."
+    }
+  ],
+  "final_analysis": {
+    "transcription": "And the font size was very small, so you could improve it.",
+    "conversationalResponse": "Thank you very much for clarifying! Poor legibility due to small font is definitely something we need to address. We appreciate you taking the time to share this specific feedback.",
+    "requiresFollowUp": false,
+    "conversationComplete": true,
+    "score": 7
+  },
+  "metadata": {
+    "total_turns": 1,
+    "completed_at": "2025-11-18T19:32:20.980082Z"
+  },
+  "saved_at": "2025-11-18T19:32:20.980087Z"
+}

@@ -1,0 +1,24 @@
+{
+  "score": 10,
+  "sentiment": "Happy",
+  "initial_transcription": "Loved the course! The projects were engaging and practical.",
+  "initial_feedback_points": [
+    "Great value",
+    "Comprehensive coverage",
+    "Engaging instructor",
+    "Good examples"
+  ],
+  "turns": [],
+  "final_analysis": {
+    "transcription": "Loved the course! The projects were engaging and practical.",
+    "conversationalResponse": "Thank you for your feedback! We appreciate you taking the time to share your experience with our course.",
+    "requiresFollowUp": false,
+    "conversationComplete": true,
+    "sentiment": "Happy"
+  },
+  "metadata": {
+    "total_turns": 0,
+    "completed_at": "2025-11-18T01:34:25.536859+00:00Z"
+  },
+  "saved_at": "2025-11-18T01:34:25.536859+00:00Z"
+}

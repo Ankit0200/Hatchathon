@@ -24,7 +24,9 @@ from google.generativeai.types import GenerationConfig
 
 # --- Config ---
 CONVERSATIONS_DIR = "conversations"
+COURSE_CONVERSATIONS_DIR = "courseconversations"
 os.makedirs(CONVERSATIONS_DIR, exist_ok=True)
+os.makedirs(COURSE_CONVERSATIONS_DIR, exist_ok=True)
 
 app = FastAPI(title="Audio Feedback API", version="1.0.0")
 
@@ -145,10 +147,10 @@ def extract_json_from_text(text: str) -> Dict[str, Any]:
     raise ValueError("No valid JSON found in model output")
 
 
-def save_conversation_file(payload: dict) -> str:
+def save_conversation_file(payload: dict, directory: str = CONVERSATIONS_DIR) -> str:
     ts = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
     filename = f"conversation_{ts}.json"
-    path = os.path.join(CONVERSATIONS_DIR, filename)
+    path = os.path.join(directory, filename)
     with open(path, "w", encoding="utf-8") as f:
         json.dump(payload, f, indent=2, ensure_ascii=False)
     return filename
@@ -299,7 +301,25 @@ def compute_analytics(records: List[Dict[str, Any]]) -> Dict[str, Any]:
     )
 
     # Follow-up stats
-    followup_flags = [bool(r.get("requires_followup")) for r in records if r.get("requires_followup") is not None]
+    # A conversation needed follow-up if:
+    # 1. It explicitly has requires_followup=True, OR
+    # 2. It has turns > 0 (meaning follow-ups actually happened - most reliable indicator)
+    # Note: Conversations are only saved when complete (requiresFollowUp=False), so we use turns as the indicator
+    followup_flags = []
+    for r in records:
+        requires_followup = r.get("requires_followup")
+        total_turns = r.get("total_turns", 0)
+        # If explicitly True, or if there were follow-up turns, it needed follow-up
+        if requires_followup is True:
+            followup_flags.append(True)
+        elif total_turns > 0:
+            # If there are turns, it means follow-ups happened, so follow-up was needed
+            followup_flags.append(True)
+        elif requires_followup is False and total_turns == 0:
+            # Explicitly False and no turns means no follow-up was needed
+            followup_flags.append(False)
+        # If None and no turns, we can't determine, so skip
+    
     followup_pct = round(100 * sum(followup_flags) / len(followup_flags), 2) if followup_flags else 0.0
 
     completion_flags = [bool(r.get("conversation_complete")) for r in records if r.get("conversation_complete") is not None]
@@ -310,14 +330,33 @@ def compute_analytics(records: List[Dict[str, Any]]) -> Dict[str, Any]:
     avg_turns = round(sum(turns_list) / len(turns_list), 2) if turns_list else 0.0
     max_turns = max(turns_list) if turns_list else 0
 
-    # Feedback themes
-    feedback_counter = Counter()
+    # Feedback themes with sentiment tracking
+    feedback_data = {}  # {text: {"count": int, "sentiments": [list of sentiments]}}
     for r in records:
         points = r.get("initial_feedback_points") or []
+        sentiment = r.get("sentiment", "").lower() if r.get("sentiment") else ""
         if isinstance(points, list):
-            feedback_counter.update([p.strip() for p in points if p])
-
-    top_feedback = [{"text": text, "count": count} for text, count in feedback_counter.most_common(5)]
+            for point in points:
+                if point and point.strip():
+                    text = point.strip()
+                    if text not in feedback_data:
+                        feedback_data[text] = {"count": 0, "sentiments": []}
+                    feedback_data[text]["count"] += 1
+                    if sentiment:
+                        feedback_data[text]["sentiments"].append(sentiment)
+    
+    # Determine dominant sentiment for each feedback
+    top_feedback = []
+    for text, data in sorted(feedback_data.items(), key=lambda x: x[1]["count"], reverse=True)[:5]:
+        sentiments = data["sentiments"]
+        # Determine if negative based on sentiment
+        negative_sentiments = ["negative", "frustrated", "angry", "disappointed", "unhappy"]
+        is_negative = any(s in negative_sentiments for s in sentiments) if sentiments else False
+        top_feedback.append({
+            "text": text,
+            "count": data["count"],
+            "is_negative": is_negative
+        })
 
     return {
         "total_conversations": len(records),
@@ -383,12 +422,14 @@ Consider:
 async def top_focus_areas(
     start_date: Optional[str] = Query(None, description="ISO date or datetime (inclusive)"),
     end_date: Optional[str] = Query(None, description="ISO date or datetime (inclusive)"),
+    conversation_type: str = Query("regular", description="Type of conversation: 'regular' or 'course'"),
 ):
     """
     Returns the top 3 things to focus on based on negative/frustrated customer feedback, analyzed by Gemini AI.
     Only analyzes feedback from conversations with negative or frustrated sentiment.
     """
-    records = load_conversation_records(CONVERSATIONS_DIR)
+    directory = COURSE_CONVERSATIONS_DIR if conversation_type == "course" else CONVERSATIONS_DIR
+    records = load_conversation_records(directory)
     if not records:
         raise HTTPException(status_code=404, detail="No saved conversations found")
 
@@ -434,7 +475,7 @@ async def top_focus_areas(
         filename = record.get("filename")
         if filename:
             try:
-                path = os.path.join(CONVERSATIONS_DIR, filename)
+                path = os.path.join(directory, filename)
                 with open(path, "r", encoding="utf-8") as f:
                     full_data = json.load(f)
                     turns = full_data.get("turns", [])
@@ -493,11 +534,13 @@ async def top_focus_areas(
 async def analytics_summary(
     start_date: Optional[str] = Query(None, description="ISO date or datetime (inclusive)"),
     end_date: Optional[str] = Query(None, description="ISO date or datetime (inclusive)"),
+    conversation_type: str = Query("regular", description="Type of conversation: 'regular' or 'course'"),
 ):
     """
     Returns summarized analytics for all saved conversations.
     """
-    records = load_conversation_records(CONVERSATIONS_DIR)
+    directory = COURSE_CONVERSATIONS_DIR if conversation_type == "course" else CONVERSATIONS_DIR
+    records = load_conversation_records(directory)
     if not records:
         raise HTTPException(status_code=404, detail="No saved conversations found")
 
@@ -528,7 +571,8 @@ async def analytics_summary(
 async def submit_feedback(
     score: int = Form(..., description="NPS score from 0-10"),
     transcription: str = Form(None, description="Pre-transcribed text (faster, optional)"),
-    audio_data: UploadFile = File(None, description="Audio file (fallback if no transcription)")
+    audio_data: UploadFile = File(None, description="Audio file (fallback if no transcription)"),
+    conversation_type: str = Form("regular", description="Type of conversation: 'regular' or 'course'")
 ):
     audio_file_handle = None
     temp_path = None
@@ -617,6 +661,39 @@ async def submit_feedback(
             "turns": []
         }
 
+        # If conversation doesn't require follow-up, save it immediately
+        if not parsed.get("requiresFollowUp", True):
+            try:
+                # Determine directory based on conversation_type
+                save_directory = COURSE_CONVERSATIONS_DIR if conversation_type == "course" else CONVERSATIONS_DIR
+                
+                # Build complete conversation data
+                complete_conversation = {
+                    "score": score,
+                    "sentiment": parsed.get("sentiment", ""),
+                    "initial_transcription": parsed.get("transcription", ""),
+                    "initial_feedback_points": parsed.get("feedback", []),
+                    "turns": [],  # No turns for initial feedback without follow-up
+                    "final_analysis": {
+                        "transcription": parsed.get("transcription", ""),
+                        "conversationalResponse": parsed.get("conversationalResponse", ""),
+                        "requiresFollowUp": False,
+                        "conversationComplete": True,
+                        "sentiment": parsed.get("sentiment", "")
+                    },
+                    "metadata": {
+                        "total_turns": 0,
+                        "completed_at": datetime.utcnow().isoformat() + "Z"
+                    },
+                    "saved_at": datetime.utcnow().isoformat() + "Z"
+                }
+                
+                saved_filename = save_conversation_file(complete_conversation, save_directory)
+                parsed["saved_conversation_file"] = saved_filename
+                print(f"💾 Initial conversation saved ({conversation_type}) without follow-up:", saved_filename)
+            except Exception as e:
+                print("Failed saving initial conversation file:", e)
+
         result = {
             **parsed,
             "history": history
@@ -640,7 +717,8 @@ async def submit_followup(
     score: int = Form(..., description="Original rating score from 0-10"),
     conversation_history: str = Form(..., description="Full conversation history as JSON string"),
     transcription: str = Form(None, description="Pre-transcribed text (faster, optional)"),
-    audio_data: UploadFile = File(None, description="Follow-up audio file (fallback if no transcription)")
+    audio_data: UploadFile = File(None, description="Follow-up audio file (fallback if no transcription)"),
+    conversation_type: str = Form("regular", description="Type of conversation: 'regular' or 'course'")
 ):
     audio_file_handle = None
     temp_path = None
@@ -757,6 +835,9 @@ async def submit_followup(
         # If conversation done, save to disk
         if not parsed.get("requiresFollowUp", True):
             try:
+                # Determine directory based on conversation_type
+                save_directory = COURSE_CONVERSATIONS_DIR if conversation_type == "course" else CONVERSATIONS_DIR
+                
                 # Build complete conversation data with sentiment
                 complete_conversation = {
                     "score": score,
@@ -772,9 +853,9 @@ async def submit_followup(
                     "saved_at": datetime.utcnow().isoformat() + "Z"
                 }
                 
-                saved_filename = save_conversation_file(complete_conversation)
+                saved_filename = save_conversation_file(complete_conversation, save_directory)
                 parsed["saved_conversation_file"] = saved_filename
-                print("💾 Conversation saved with sentiment:", saved_filename)
+                print(f"💾 Conversation saved ({conversation_type}) with sentiment:", saved_filename)
             except Exception as e:
                 print("Failed saving conversation file:", e)
 
