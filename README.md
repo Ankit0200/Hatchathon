@@ -26,20 +26,6 @@ Built as part of a team of 5 for the Hatchathon 2025, survAI demonstrates a full
 - **Database:** SQLite (for prototype)
 - **Version Control:** Git, GitHub
 
----
-
-## 📁 Project Structure
-survAI/
-├── frontend/ # React app for recording and viewing feedback
-├── backend/ # FastAPI server for processing voice and analysis
-├── models/ # Pre-trained models for speech-to-text and sentiment
-├── requirements.txt # Python dependencies
-└── README.md
-
-yaml
-Copy code
-
----
 
 ## 🚀 Getting Started
 
