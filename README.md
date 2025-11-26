@@ -7,7 +7,7 @@ survAI is a real-time voice feedback platform designed to replace manual surveys
 ---
 
 ## 🏆 Hackathon Context
-Built as part of a team of 5 for the [Name of Hackathon] 2025, survAI demonstrates a full-stack solution integrating voice-to-text conversion, LLM-based sentiment analysis, and a clean, responsive frontend.
+Built as part of a team of 5 for the Hatchathon 2025, survAI demonstrates a full-stack solution integrating voice-to-text conversion, LLM-based sentiment analysis, and a clean, responsive frontend.
 
 ---
 
@@ -74,7 +74,6 @@ uvicorn main:app --reload
 Open the frontend at http://localhost:3000 and start recording feedback.
 
 
-[Other Team Members]
 
 📌 Notes
 Built as a hackathon prototype; improvements can include authentication, persistent database storage, and cloud deployment.
@@ -84,12 +83,6 @@ Gemini API keys are required for sentiment analysis.
 📄 License
 MIT License © 2025 Ankit Devkota
 
-pgsql
-Copy code
-
-This is fully copy-pasteable into your GitHub repository.  
-
-I can also make a **shorter, recruiter-friendly version** that highlights your role and technical skills without the full setup steps. Do you want me to do that?
 
 
 
